@@ -1,0 +1,13 @@
+Ngay ghi: 2026-11-02
+May: Arch Linux, kernel 7.2.11-arch1-1, Python 3.14.9
+arduino-cli 1.5.1
+OhStem:esp32 3.1.3, FQBN OhStem:esp32:yolo_uno
+esp_arduino_version.h: 3.1.3
+DHT20 0.3.1, Adafruit NeoPixel 1.12.0 (di kem core)
+LiquidCrystal_I2C 2.0.0 (Library Manager)
+Cau hinh build mac dinh: flash 4MB, partitions=default, USBMode=hwcdc, CDCOnBoot=Enabled
+
+Ket qua build (chua nap len kit):
+env_info  298732 bytes (22%), RAM tinh 19848 bytes
+blink     296340 bytes (22%), RAM tinh 19848 bytes
+print_mac 841960 bytes (64%), RAM tinh 42980 bytes
