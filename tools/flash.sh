@@ -11,7 +11,8 @@ SECONDS_LOG="${3:-15}"
 LOG_FILE="${4:-}"
 NAME="$(basename "$SKETCH")"
 
-arduino-cli compile -b "$FQBN" --build-path "$ROOT/build/$NAME" "$SKETCH"
+# common/ (protocol.h, app_log, coreiot_link) duoc nap nhu mot thu vien dung chung hai node.
+arduino-cli compile -b "$FQBN" --library "$ROOT/common" --build-path "$ROOT/build/$NAME" "$SKETCH"
 [ -n "$PORT" ] || exit 0
 
 if [ ! -e "$PORT" ]; then echo "Khong thay $PORT. Kiem tra cap du lieu va cong." >&2; exit 1; fi

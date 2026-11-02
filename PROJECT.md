@@ -219,7 +219,7 @@ Shared attributes do server ghi khi gán OTA (thiết bị chỉ đọc): `fw_ti
 | `setPump` | `true/false` | 2 | chỉ Manual (mô phỏng) |
 | `cloudAlert` | `{"level":0\|1\|2,"msg":"<≤16 ký tự>"}` | 2 | luôn (mọi chế độ) | `0` xóa cảnh báo; `1` cảnh báo (NeoPixel chớp vàng); `2` nghiêm trọng (chớp đỏ); `msg` hiện dòng 2 LCD 10 s. Do RuleChain gửi khi Alarm tạo/xóa. Không đổi trạng thái chấp hành. |
 
-Phản hồi two-way RPC tại `v1/devices/me/rpc/response/<id>`. Lệnh bị từ chối (đang Auto) phải trả `{"ok":false,"reason":"auto_mode"}`.
+Phản hồi two-way RPC tại `v1/devices/me/rpc/response/<id>`. Lệnh bị từ chối (đang Auto) phải trả `{"ok":false,"reason":"auto_mode"}`. Các lý do khác: `unknown_method` (method lạ), `bad_params` (JSON hỏng hoặc `params` sai kiểu/ngoài dải). Hằng số nằm ở `common/protocol.h`.
 
 ## 8. Chức năng chi tiết
 
