@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include "DHT20.h"
 #include <app_log.h>
+#include <protocol.h>
 #include "config.h"
 #include "shared_data.h"
 #include "tasks.h"

@@ -1,5 +1,6 @@
 // common/coreiot_link.cpp
 #include <WiFi.h>
+#include <esp_wifi.h>
 #include <PubSubClient.h>
 #include "coreiot_link.h"
 #include "protocol.h"
@@ -46,10 +47,18 @@ void onMqttMessage(char *topic, uint8_t *payload, unsigned int len) {
   if (xQueueSend(rpcQueue, &req, 0) != pdTRUE) rpcDropped++;
 }
 
+// Sau disconnect radio co the dung o kenh quet cuoi; dua ve kenh ESP-NOW de hai node van nghe nhau.
+void holdChannel() {
+  if (cfg.channel == 0) return;
+  esp_err_t err = esp_wifi_set_channel(cfg.channel, WIFI_SECOND_CHAN_NONE);
+  if (err != ESP_OK) appLog("WIFI", "set channel %u failed err=%d", cfg.channel, (int)err);
+}
+
 void startWifiAttempt() {
   appLog("WIFI", "connecting to '%s' (attempt %u)", cfg.ssid, wifiFailures + 1);
   WiFi.disconnect();
-  WiFi.begin(cfg.ssid, cfg.pass);
+  // Kenh co dinh: chi quet kenh do, ESP-NOW khong bi keo sang kenh khac khi router doi/tat.
+  WiFi.begin(cfg.ssid, cfg.pass, cfg.channel);
   wifiPhase = WifiPhase::Connecting;
   wifiPhaseMs = millis();
 }
@@ -60,6 +69,7 @@ void scheduleWifiRetry() {
   if (wifiFailures < UINT8_MAX) wifiFailures++;
   appLog("WIFI", "not connected (status=%d), retry in %lu ms", WiFi.status(), (unsigned long)wait);
   WiFi.disconnect();
+  holdChannel();
   wifiPhase = WifiPhase::Idle;
   wifiPhaseMs = millis() + wait;
 }
@@ -70,6 +80,7 @@ void serviceWifi() {
     case WifiPhase::Up:
       if (!up) {
         appLog("WIFI", "connection lost");
+        holdChannel();
         wifiPhase = WifiPhase::Idle;
         wifiPhaseMs = millis();
       }
@@ -132,6 +143,8 @@ bool linkBegin(const LinkConfig &c) {
   WiFi.persistent(false);       // khong ghi flash moi lan begin
   WiFi.mode(WIFI_STA);          // ESP-NOW (M5) cung can STA
   WiFi.setAutoReconnect(false); // tu quan ly backoff
+  WiFi.setSleep(false);         // modem-sleep lam ESP-NOW rot goi khi STA dang ket noi
+  holdChannel();
   mqtt.setServer(cfg.host, cfg.port);
   mqtt.setKeepAlive(cfg.keepAliveS);
   mqtt.setSocketTimeout(cfg.socketTimeoutS);

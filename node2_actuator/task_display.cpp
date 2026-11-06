@@ -20,6 +20,8 @@ void formatLine0(char *out, size_t size, const SensorView &v, const ActuatorStat
   char body[LCD_COLS];
   if (a.dataStale) {
     snprintf(body, sizeof(body), "NO DATA");
+  } else if (a.dataFault) {
+    snprintf(body, sizeof(body), "N1 SENSOR FAULT");
   } else {
     snprintf(body, sizeof(body), "T%4.1f H%3.0f S%3u", v.temperature, v.humidity, v.soil);
   }

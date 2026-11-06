@@ -5,7 +5,7 @@ namespace {
 SemaphoreHandle_t dataMutex = nullptr;
 
 SensorView sensor = {};
-ActuatorState actuators = {true, false, false, true};
+ActuatorState actuators = {true, false, false, true, false};
 NetState net = {};
 CloudAlertState alert = {};
 
@@ -68,9 +68,10 @@ CmdResult sharedSetManualPump(bool on) {
   return CmdResult::Ok;
 }
 
-void sharedApplyAuto(bool fan, bool pump, bool dataStale) {
+void sharedApplyAuto(bool fan, bool pump, bool dataStale, bool dataFault) {
   DataGuard g;
   actuators.dataStale = dataStale;
+  actuators.dataFault = dataFault;
   if (!actuators.autoMode) return;
   actuators.fan = fan;
   actuators.pump = pump;

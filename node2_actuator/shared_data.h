@@ -3,11 +3,13 @@
 #pragma once
 #include <Arduino.h>
 
-// Ban sao du lieu Node 1 (M5: tu ESP-NOW; hien tai: du lieu gia).
+// Ban sao du lieu Node 1 nhan qua ESP-NOW (hoac du lieu gia khi USE_FAKE_SENSOR_DATA).
 struct SensorView {
-  float temperature;
-  float humidity;
+  float temperature;   // SENTINEL_T khi DHT20 Node 1 loi
+  float humidity;      // SENTINEL_H khi DHT20 Node 1 loi
   uint8_t soil;
+  uint8_t aiClass;     // AI_CLASS_*
+  uint8_t heaterRemote;  // muc suoi hien tai cua Node 1
   uint32_t seq;        // 0 = chua nhan goi nao
   uint32_t receivedMs;
 };
@@ -16,7 +18,8 @@ struct ActuatorState {
   bool autoMode;
   bool fan;
   bool pump;
-  bool dataStale;      // > DATA_STALE_MS khong co du lieu moi
+  bool dataStale;      // > ESPNOW_STALE_MS khong co du lieu moi
+  bool dataFault;      // Node 1 bao cam bien loi (ai_class 3 / sentinel)
 };
 
 struct NetState {
@@ -43,7 +46,8 @@ ActuatorState sharedGetActuators();
 void sharedSetAutoMode(bool autoMode);
 CmdResult sharedSetManualFan(bool on);
 CmdResult sharedSetManualPump(bool on);
-void sharedApplyAuto(bool fan, bool pump, bool dataStale);  // chi doi chap hanh khi dang Auto
+// Luon cap nhat co stale/fault; chi doi chap hanh khi dang Auto.
+void sharedApplyAuto(bool fan, bool pump, bool dataStale, bool dataFault);
 
 void sharedSetNet(const NetState &net);
 NetState sharedGetNet();

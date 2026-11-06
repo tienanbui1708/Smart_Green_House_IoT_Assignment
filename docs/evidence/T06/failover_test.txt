@@ -1,0 +1,23 @@
+# T06 – Bai thu tat router (TASKS_SPEC 3.5.4) – MAU, CHUA THUC HIEN
+# Dien sau khi thu tren kit that. Chua co log -> KHONG tuyen bo dat.
+
+Ngay gio:
+Firmware Node 1 / Node 2 (FW_VERSION):
+ESPNOW_CHANNEL (ca hai node):            Kenh router (log "[WIFI] connected ... ch="):
+Khoang cach hai node:
+
+Kich ban:
+1. Hai node chay on dinh >= 2 phut, Node 2 LCD hien so lieu, log Node 1 co "[NOW] RTT".
+2. Tat router, bat dong ho. Giu 5 phut.
+3. Quan sat: ack_rate (dong "[NOW] stats" Node 1), espnow_age_s / LCD Node 2 (co "NO DATA" khong).
+4. Bat lai router. Ghi thoi gian den khi ca hai node "[MQTT] connected".
+
+Ket qua:
+- ack_rate truoc khi tat router:
+- ack_rate trong 5 phut tat router:
+- Node 2 co vao NO DATA khong? Neu co, sau bao lau:
+- Thoi gian hai node noi lai Cloud sau khi bat router (s):
+- Ket luan (DAT / KHONG DAT):
+- Ghi chu (vi du: kenh bi doi khi quet lai, can dat ESPNOW_CHANNEL = kenh router):
+
+Log dinh kem: docs/evidence/T06/failover_node1.txt, failover_node2.txt

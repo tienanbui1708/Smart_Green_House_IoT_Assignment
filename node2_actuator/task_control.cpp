@@ -1,7 +1,8 @@
 // node2_actuator/task_control.cpp
 // Luat Auto cua Node 2 (PROJECT.md 8.3) + che do an toan khi mat du lieu (8.2).
-// M2: nguon du lieu la song tam giac gia de quet qua moi nguong; M5 thay bang ESP-NOW.
+// Nguon du lieu: ESP-NOW tu Node 1 (task_espnow_rx) hoac song tam giac gia (USE_FAKE_SENSOR_DATA).
 #include <app_log.h>
+#include <protocol.h>
 #include "config.h"
 #include "shared_data.h"
 #include "tasks.h"
@@ -24,6 +25,7 @@ void produceFakeSample(uint32_t &seq) {
   v.temperature = triangle(seq, 26.0f, 35.0f);
   v.humidity = triangle(seq + FAKE_STEPS / 4, 40.0f, 90.0f);
   v.soil = (uint8_t)triangle(seq + FAKE_STEPS / 2, 10.0f, 75.0f);
+  v.aiClass = AI_CLASS_BOOTING;
   v.receivedMs = millis();
   sharedSetSensor(v);
 #if DEBUG_LOG
@@ -56,22 +58,30 @@ bool pumpRule(const SensorView &v, bool pumpNow) {
   return pumpNow;
 }
 
+// Node 1 bao loi bang ai_class 3 hoac gia tri sentinel: khong dieu khien theo gia tri hong.
+bool sensorFault(const SensorView &v) {
+  bool sentinel = v.temperature == SENTINEL_T && v.humidity == SENTINEL_H;  // gan nguyen gia tri, so sanh bang an toan
+  return v.aiClass == AI_CLASS_SENSOR_FAULT || sentinel;
+}
+
 void applyRules() {
   SensorView v = sharedGetSensor();
   ActuatorState a = sharedGetActuators();
-  bool stale = v.seq == 0 || millis() - v.receivedMs > DATA_STALE_MS;
+  bool stale = v.seq == 0 || millis() - v.receivedMs > ESPNOW_STALE_MS;
+  bool fault = !stale && sensorFault(v);
   if (stale != a.dataStale) appLog("CTRL", stale ? "data stale -> safe mode" : "data fresh");
-  if (stale) {
-    sharedApplyAuto(false, false, true);  // an toan: tat chap hanh mo phong
+  if (fault != a.dataFault) appLog("CTRL", fault ? "node1 sensor fault -> safe mode" : "node1 sensor ok");
+  if (stale || fault) {
+    sharedApplyAuto(false, false, stale, fault);  // an toan: tat chap hanh mo phong
     return;
   }
-  sharedApplyAuto(fanRule(v), pumpRule(v, a.pump), false);
+  sharedApplyAuto(fanRule(v), pumpRule(v, a.pump), false, false);
 }
 }  // namespace
 
 void taskControl(void *) {
 #if USE_FAKE_SENSOR_DATA
-  appLog("CTRL", "USING FAKE SENSOR DATA (no ESP-NOW yet)");
+  appLog("CTRL", "USING FAKE SENSOR DATA (USE_FAKE_SENSOR_DATA=1, ESP-NOW ignored)");
   uint32_t seq = 0;
   uint32_t lastFakeMs = millis() - FAKE_DATA_PERIOD_MS;
 #endif

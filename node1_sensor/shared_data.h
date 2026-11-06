@@ -24,6 +24,16 @@ struct NetState {
   int8_t rssi;
 };
 
+// Thong ke ESP-NOW (task espnow ghi, web/telemetry doc).
+struct EspNowStats {
+  bool ready;          // esp_now_init + add peer OK
+  uint32_t sent;       // so goi esp_now_send tra ESP_OK
+  uint32_t acked;      // so Ack hop le (khop seq)
+  uint32_t sendErr;    // esp_now_send loi hoac callback bao FAIL
+  uint32_t lastRttUs;
+  uint32_t lastAckMs;  // millis() luc nhan Ack gan nhat, 0 = chua co
+};
+
 enum class CmdResult : uint8_t { Ok, RejectedAutoMode };
 
 void sharedInit();  // goi trong setup() truoc khi tao task
@@ -39,6 +49,13 @@ bool sharedForceSafe();                   // ep Auto + tat suoi; tra true neu tr
 
 void sharedSetNet(const NetState &net);
 NetState sharedGetNet();
+
+// Nhan TinyML da lam muot (AI_CLASS_*); AI_CLASS_BOOTING khi chua du cua so.
+void sharedSetAiClass(uint8_t cls);
+uint8_t sharedGetAiClass();
+
+void sharedSetEspNow(const EspNowStats &stats);
+EspNowStats sharedGetEspNow();
 
 // Bus I2C dung chung cho DHT20 (task sensor) va LCD (task display).
 bool i2cLock(uint32_t timeoutMs);

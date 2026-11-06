@@ -175,14 +175,14 @@ Nguồn sự thật: `common/protocol.h` + `PROJECT.md` mục 7. Sửa giao th�
 | `setHeater` | `0..255` | 1 | chỉ Manual |
 | `setFan` | `bool` | 2 | chỉ Manual |
 | `setPump` | `bool` | 2 | chỉ Manual |
-| `cloudAlert` | `{level:0\|1\|2, msg:"≤16 ký tự"}` | 2 | luôn (**TODO M4**) |
+| `cloudAlert` | `{level:0\|1\|2, msg:"≤16 ký tự"}` | 2 | luôn |
 
 Phản hồi two-way RPC: `{"ok":true}` hoặc `{"ok":false,"reason":"auto_mode"|"unknown_method"|"bad_params"}`.
 
-### 5.3 Gói ESP-NOW (thêm vào protocol.h ở M5)
+### 5.3 Gói ESP-NOW (`common/protocol.h`)
 
-**Pkt (Node 1 → Node 2):** `ver, seq, t, h, soil, cls, heater, tx_ms`
-**Ack (Node 2 → Node 1):** `ver, seq`
+**`EspNowSensorPkt` (Node 1 → Node 2):** `ver, seq, temperature, humidity, soil, ai_class, heater, tx_ms`
+**`EspNowAckPkt` (Node 2 → Node 1):** `ver, seq, rx_ms`
 
 ---
 

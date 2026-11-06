@@ -20,6 +20,7 @@ TaskEntry appTasks[] = {
     {"display", taskDisplay, STACK_DISPLAY, PRIO_DISPLAY, nullptr},
     {"led", taskLed, STACK_LED, PRIO_LED, nullptr},
     {"coreiot", taskCoreiot, STACK_COREIOT, PRIO_COREIOT, nullptr},
+    {"espnow", taskEspnow, STACK_ESPNOW, PRIO_ESPNOW, nullptr},
 };
 
 // Dong STATS dung de ve do thi heap va chot stack (CLAUDE.md 4.1, 4.2).

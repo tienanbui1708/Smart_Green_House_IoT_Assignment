@@ -10,8 +10,8 @@
 namespace {
 Adafruit_NeoPixel pixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEOPIXEL_TYPE);
 
-uint32_t colorForHumidity(float h, bool stale) {
-  if (stale) return 0;
+uint32_t colorForHumidity(float h, bool noData) {
+  if (noData) return pixel.Color(NEO_NO_DATA_RGB);
   if (h < NEO_H_BLUE_BELOW) return pixel.Color(0, 0, 255);
   if (h > NEO_H_RED_ABOVE) return pixel.Color(255, 0, 0);
   return pixel.Color(255, 180, 0);
@@ -60,7 +60,7 @@ void taskActuator(void *) {
       appLog("ACT", "cloudAlert level=%u", al.level);
       shownAlert = al.level;
     }
-    uint32_t c = al.level != 0 ? colorForAlert(al.level) : colorForHumidity(v.humidity, a.dataStale);
+    uint32_t c = al.level != 0 ? colorForAlert(al.level) : colorForHumidity(v.humidity, a.dataStale || a.dataFault);
     if (c != shownColor) {
       showColor(c);
       shownColor = c;
