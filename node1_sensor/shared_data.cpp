@@ -11,6 +11,7 @@ SemaphoreHandle_t newSampleSem = nullptr;  // binary: taskSensor give, taskTinym
 SensorSample sample = {};
 ControlState control = {true, HEATER_PWM_OFF};
 NetState net = {};
+bool safeHold = false;  // true: sap khoi dong lai, khong cho bat suoi nua
 EspNowStats espnow = {};
 uint8_t aiClass = AI_CLASS_BOOTING;
 
@@ -52,19 +53,19 @@ ControlState sharedGetControl() {
 
 void sharedSetAutoMode(bool autoMode) {
   DataGuard g;
-  control.autoMode = autoMode;
+  if (!safeHold) control.autoMode = autoMode;
 }
 
 CmdResult sharedSetManualHeater(uint8_t value) {
   DataGuard g;
-  if (control.autoMode) return CmdResult::RejectedAutoMode;
+  if (control.autoMode || safeHold) return CmdResult::RejectedAutoMode;
   control.heater = value;
   return CmdResult::Ok;
 }
 
 void sharedSetAutoHeater(uint8_t value) {
   DataGuard g;
-  if (control.autoMode) control.heater = value;
+  if (control.autoMode && !safeHold) control.heater = value;
 }
 
 bool sharedForceSafe() {
@@ -73,6 +74,13 @@ bool sharedForceSafe() {
   control.autoMode = true;
   control.heater = HEATER_PWM_OFF;
   return changed;
+}
+
+void sharedHoldSafe() {
+  DataGuard g;
+  safeHold = true;
+  control.autoMode = true;
+  control.heater = HEATER_PWM_OFF;
 }
 
 void sharedSetNet(const NetState &n) {

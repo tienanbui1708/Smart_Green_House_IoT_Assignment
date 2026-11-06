@@ -64,7 +64,8 @@
 
 // ---- Mang (M3) ----
 #define MQTT_CLIENT_ID "greenhouse-node1"
-#define MQTT_BUFFER_SIZE 512
+#define MQTT_BUFFER_SIZE (OTA_CHUNK_SIZE + 512)  // chunk OTA + topic + header (TASKS_SPEC 6.1)
+#define TELEMETRY_JSON_MAX 448            // JSON telemetry tren stack task coreiot
 #define MQTT_KEEPALIVE_S 30
 #define MQTT_SOCKET_TIMEOUT_S 5
 #define MQTT_LOOP_MS 50
@@ -118,3 +119,11 @@
 #define AI_WAIT_SAMPLE_MS 3000            // cho mau moi; qua han thi log va doi tiep
 #define STACK_TINYML 8192
 #define PRIO_TINYML 2
+
+// ---- OTA qua CoreIOT (M8, T14) - partition scheme PHAI co 2 slot app: min_spiffs (README) ----
+#define OTA_CHUNK_SIZE 4096               // giam 1024 neu loi bo nho; MQTT_BUFFER_SIZE >= chunk + 256
+#define OTA_CHUNK_TIMEOUT_MS 10000
+#define OTA_CHUNK_RETRIES 3
+#define OTA_MAX_ATTEMPTS 3                // moi fw_version dich (NVS), qua thi FAILED va dung
+#define OTA_PROGRESS_PERIOD_MS 1000
+#define OTA_REBOOT_DELAY_MS 1000

@@ -433,7 +433,7 @@ Nhắc Claude (theo `CLAUDE.md`, làm đúng một milestone): thêm nhánh `if 
 
 ### 10.1 Điều kiện để OTA hoạt động
 
-1. **Phân vùng flash có hai slot ứng dụng.** Trong Arduino IDE: **Tools → Partition Scheme**, chọn loại có OTA (có `app0` và `app1`, ví dụ "Default 4MB with spiffs" hoặc loại tương đương cho flash 16 MB). Tên lựa chọn thực tế phụ thuộc board OhStem (**CẦN XÁC MINH**). Phải **nạp lại bằng cáp** với phân vùng đúng trước khi thử OTA lần đầu. Chọn sai phân vùng thì OTA thất bại hoặc hỏng.
+1. **Phân vùng flash có hai slot ứng dụng.** Dự án chọn **`min_spiffs`** = Arduino IDE **Tools → Partition Scheme → "Minimal SPIFFS (1.9MB APP with OTA/190KB SPIFFS)"** (đã đối chiếu `boards.txt` của OhStem 3.1.3: `app0`/`app1` mỗi slot 0x1E0000, `spiffs` 128 KB cho LittleFS `/config.json`). `tools/flash.sh` và `tools/make_ota_bin.sh` mặc định dùng scheme này. Bản build để upload OTA phải dùng **cùng** scheme với bản đang chạy. Phải **nạp lại bằng cáp** với phân vùng đúng trước khi thử OTA lần đầu. Chọn sai phân vùng thì OTA thất bại hoặc hỏng.
 2. Firmware **đã cài sẵn** logic OTA (đã làm ở milestone M8, theo `CLAUDE.md` mục 4.6) và có hằng `FW_VERSION`.
 3. `mqtt.setBufferSize(...)` đủ lớn: kích thước buffer phải **lớn hơn** kích thước chunk yêu cầu + vài chục byte (ví dụ chunk 4096 B → buffer ≥ 4200 B). Chunk nhỏ (1024 B) chậm nhưng an toàn hơn khi mới thử.
 4. Thiết bị phải có đủ RAM trống (log `heap`).

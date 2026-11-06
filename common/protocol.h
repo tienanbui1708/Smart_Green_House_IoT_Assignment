@@ -43,6 +43,21 @@ constexpr const char *TOPIC_RPC_REQUEST_SUB = "v1/devices/me/rpc/request/+";
 constexpr const char *TOPIC_RPC_REQUEST_PREFIX = "v1/devices/me/rpc/request/";
 constexpr const char *TOPIC_RPC_RESPONSE_PREFIX = "v1/devices/me/rpc/response/";
 
+// ---- OTA (ThingsBoard device API, PROJECT.md 7.2 / COREIOT_SETUP.md 10.5) ----
+constexpr const char *TOPIC_ATTRIBUTES = "v1/devices/me/attributes";                    // shared attr cap nhat
+constexpr const char *TOPIC_ATTR_RESPONSE_SUB = "v1/devices/me/attributes/response/+";
+constexpr const char *TOPIC_ATTR_RESPONSE_PREFIX = "v1/devices/me/attributes/response/";
+constexpr const char *TOPIC_ATTR_REQUEST_PREFIX = "v1/devices/me/attributes/request/";
+constexpr const char *TOPIC_FW_RESPONSE_SUB = "v2/fw/response/+/chunk/+";
+constexpr const char *TOPIC_FW_RESPONSE_PREFIX = "v2/fw/response/";                    // <reqId>/chunk/<i>
+constexpr const char *TOPIC_FW_REQUEST_FMT = "v2/fw/request/%lu/chunk/%lu";            // payload: chunk size (thap phan)
+constexpr const char *FW_SHARED_KEYS = "fw_title,fw_version,fw_size,fw_checksum,fw_checksum_algorithm";
+constexpr const char *TK_CURRENT_FW_TITLE = "current_fw_title";
+constexpr const char *TK_CURRENT_FW_VERSION = "current_fw_version";
+constexpr const char *TK_FW_STATE = "fw_state";       // DOWNLOADING DOWNLOADED VERIFIED UPDATING UPDATED FAILED
+constexpr const char *TK_FW_ERROR = "fw_error";
+constexpr const char *TK_FW_PROGRESS = "fw_progress";  // % khi DOWNLOADING
+
 // ---- RPC methods (muc 7.3) ----
 constexpr const char *RPC_SET_MODE = "setMode";        // params: true=Auto, false=Manual
 constexpr const char *RPC_SET_HEATER = "setHeater";    // Node 1, params 0..255, chi Manual

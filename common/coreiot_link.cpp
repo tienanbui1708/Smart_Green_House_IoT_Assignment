@@ -22,6 +22,10 @@ bool mqttWasUp = false;
 bool justConnected = false;
 volatile uint32_t rpcDropped = 0;
 
+LinkMessageHandler extraHandler = nullptr;
+const char *const *extraTopics = nullptr;
+size_t extraTopicCount = 0;
+
 RescueApConfig ap = {};
 bool apActive = false;
 bool everConnected = false;
@@ -40,7 +44,10 @@ void maskToken(char *out, size_t size) {
 // Chay ben trong mqtt.loop(). Chi copy + day vao queue: bo dem PubSubClient bi ghi de khi publish.
 void onMqttMessage(char *topic, uint8_t *payload, unsigned int len) {
   const size_t prefixLen = strlen(TOPIC_RPC_REQUEST_PREFIX);
-  if (strncmp(topic, TOPIC_RPC_REQUEST_PREFIX, prefixLen) != 0) return;
+  if (strncmp(topic, TOPIC_RPC_REQUEST_PREFIX, prefixLen) != 0) {
+    if (extraHandler != nullptr) extraHandler(topic, payload, len);
+    return;
+  }
   const char *id = topic + prefixLen;
   RpcRequest req;
   size_t idLen = strlen(id);
@@ -170,6 +177,9 @@ void connectMqtt() {
   }
   bool subOk = mqtt.subscribe(TOPIC_RPC_REQUEST_SUB);
   appLog("MQTT", "connected, subscribe RPC %s", subOk ? "ok" : "FAILED");
+  for (size_t i = 0; i < extraTopicCount; i++) {
+    if (!mqtt.subscribe(extraTopics[i])) appLog("MQTT", "subscribe %s FAILED", extraTopics[i]);
+  }
   mqttWasUp = true;
   justConnected = true;
 }
@@ -192,6 +202,12 @@ void serviceMqtt() {
   if (timeReached(mqttNextTryMs)) connectMqtt();
 }
 }  // namespace
+
+void linkSetMessageHandler(LinkMessageHandler handler, const char *const *topics, size_t topicCount) {
+  extraHandler = handler;
+  extraTopics = topics;
+  extraTopicCount = topicCount;
+}
 
 void linkEnableRescueAp(const RescueApConfig &a) {
   ap = a;

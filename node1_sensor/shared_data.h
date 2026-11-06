@@ -47,6 +47,7 @@ void sharedSetAutoMode(bool autoMode);
 CmdResult sharedSetManualHeater(uint8_t value);
 void sharedSetAutoHeater(uint8_t value);  // bo qua neu dang Manual
 bool sharedForceSafe();                   // ep Auto + tat suoi; tra true neu trang thai doi
+void sharedHoldSafe();                    // tat suoi va khoa den khi khoi dong lai (truoc OTA/restart)
 
 void sharedSetNet(const NetState &net);
 NetState sharedGetNet();
