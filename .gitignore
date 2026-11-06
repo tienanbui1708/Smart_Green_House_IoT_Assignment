@@ -30,3 +30,7 @@ local_tb/tb-logs/
 # ML: ket qua train/export (tao lai bang lenh) va du lieu DEMO tong hop
 ml/out/
 ml/data_demo/
+
+# Ghi chu lam viec cuc bo (khong dua len repo)
+CLAUDE.md
+.claude/
