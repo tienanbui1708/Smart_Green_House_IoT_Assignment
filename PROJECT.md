@@ -183,20 +183,22 @@ smart-greenhouse/
 
 ## 7. Giao thức dữ liệu (nguồn sự thật duy nhất, đặt tại `common/protocol.h`)
 
-### 7.1 Gói ESP-NOW Node 1 → Node 2 (`Pkt`)
+### 7.1 Gói ESP-NOW Node 1 → Node 2 (`EspNowSensorPkt`, 20 byte, `#pragma pack(1)`)
 
 | Trường | Kiểu | Ý nghĩa |
 |---|---|---|
-| `ver` | `uint8_t` | phiên bản giao thức (=1) |
-| `seq` | `uint32_t` | số thứ tự, đo mất gói |
-| `t` | `float` | nhiệt độ °C |
-| `h` | `float` | độ ẩm không khí % |
+| `ver` | `uint8_t` | phiên bản giao thức (`PROTOCOL_VERSION` = 1) |
+| `seq` | `uint32_t` | số thứ tự, bắt đầu từ 1 sau mỗi lần Node 1 khởi động; đo mất gói |
+| `temperature` | `float` | nhiệt độ °C (`SENTINEL_T` = −40 khi DHT20 lỗi) |
+| `humidity` | `float` | độ ẩm không khí % (`SENTINEL_H` = 0 khi DHT20 lỗi) |
 | `soil` | `uint8_t` | độ ẩm đất % (đã hiệu chỉnh) |
-| `cls` | `uint8_t` | nhãn TinyML (xem 8.1) |
+| `ai_class` | `uint8_t` | nhãn TinyML 0..3 (xem 8.1); 255 = đang khởi động/chưa có AI |
 | `heater` | `uint8_t` | 0–255 sưởi mô phỏng |
-| `tx_ms` | `uint32_t` | `millis()` lúc gửi, dùng đo độ trễ |
+| `tx_ms` | `uint32_t` | `millis()` Node 1 lúc gửi (chỉ để log) |
 
-Gói lệnh Node 2 → Node 1 (`Cmd`) và `Ack` dùng cùng khuôn `ver/seq`. Hai node phải biên dịch với cùng `protocol.h`.
+**Ack Node 2 → Node 1 (`EspNowAckPkt`, 9 byte):** `ver` (`uint8_t`), `seq` (`uint32_t`, seq của gói được ack), `rx_ms` (`uint32_t`, `millis()` Node 2, chỉ để log). Độ trễ đo bằng **RTT trên đồng hồ Node 1** (RTT/2 là ước lượng một chiều); không dùng `rx_ms` vì hai đồng hồ khác nhau.
+
+Gói lệnh Node 2 → Node 1 (`Cmd`) là mục mở rộng (M5b), chưa làm. Hai node phải biên dịch với cùng `protocol.h` (có `static_assert` kích thước gói). Hai node phải cùng kênh Wi-Fi: `ESPNOW_CHANNEL` trong `config.h` của **cả hai** node phải giống nhau (0 = theo router).
 
 ### 7.2 Telemetry MQTT (topic `v1/devices/me/telemetry`)
 

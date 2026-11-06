@@ -5,3 +5,4 @@ void taskSensor(void *arg);
 void taskDisplay(void *arg);
 void taskLed(void *arg);
 void taskCoreiot(void *arg);
+void taskEspnow(void *arg);

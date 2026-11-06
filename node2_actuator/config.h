@@ -8,8 +8,8 @@
 #define FW_VERSION "1.0.0"
 #define DEBUG_LOG 1
 
-// Chua co ESP-NOW (M5): dung du lieu gia de thu hien thi va luat dieu khien.
-#define USE_FAKE_SENSOR_DATA 1
+// 1: bo qua ESP-NOW, dung song tam giac gia de thu hien thi/luat (chi khi khong co Node 1).
+#define USE_FAKE_SENSOR_DATA 0
 
 // ---- Chan: macro cua variant yolo_uno ----
 #define PIN_FAN_LED D13                   // LED onboard = quat mo phong
@@ -29,7 +29,7 @@
 #define DISPLAY_PERIOD_MS 500
 #define ACTUATOR_PERIOD_MS 50             // du min de chop canh bao 250 ms
 #define STATS_PERIOD_MS 10000
-#define DATA_STALE_MS 10000               // PROJECT.md 8.2: > 10 s la NO DATA
+#define ESPNOW_STALE_MS 10000             // PROJECT.md 8.2: > 10 s la NO DATA -> safe mode
 
 // ---- Luat dieu khien (PROJECT.md 8.3) ----
 #define FAN_ON_T_ABOVE 32.0f
@@ -38,6 +38,7 @@
 #define PUMP_OFF_SOIL_ABOVE 60
 #define NEO_H_BLUE_BELOW 50.0f
 #define NEO_H_RED_ABOVE 75.0f
+#define NEO_NO_DATA_RGB 120, 60, 160      // tim nhat co dinh khi mat/loi du lieu (khong chop: khac cloudAlert)
 
 // ---- cloudAlert (M4, PROJECT.md 7.3) ----
 #define ALERT_DURATION_MS 10000           // msg hien tren LCD 10 s, nhan lai thi gia han
@@ -72,3 +73,14 @@
 #define TELEMETRY_PERIOD_MS 5000
 #define WIFI_ATTEMPT_TIMEOUT_MS 15000
 #define WIFI_BACKOFF_LIST {3000, 5000, 10000, 20000, 30000}
+
+// ---- ESP-NOW (M5, T06) ----
+// Bo comment va dien MAC Node 1 (tools/print_mac) de chi nhan goi tu Node 1.
+// #define NODE1_MAC {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}  // TODO(verify)
+#define ESPNOW_CHANNEL 0                  // PHAI giong Node 1 (xem node1_sensor/config.h)
+#define ESPNOW_RX_QUEUE_LEN 8
+#define ESPNOW_RX_WAIT_MS 500
+#define ESPNOW_WIFI_WAIT_MS 100
+#define ESPNOW_AGE_UNKNOWN_S 999          // espnow_age_s khi chua nhan goi nao
+#define STACK_ESPNOW 4096
+#define PRIO_ESPNOW 3

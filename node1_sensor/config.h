@@ -34,8 +34,7 @@
 #define DHT20_T_MAX 80.0f
 #define DHT20_H_MIN 0.0f
 #define DHT20_H_MAX 100.0f
-#define SENTINEL_T (-40.0f)
-#define SENTINEL_H 0.0f
+// SENTINEL_T / SENTINEL_H: common/protocol.h (dung chung Node 2 va TinyML)
 
 // ---- Chu ky ----
 #define SENSOR_PERIOD_MS 2000             // phai trung chu ky thu du lieu TinyML
@@ -73,3 +72,18 @@
 #define TELEMETRY_PERIOD_MS 5000
 #define WIFI_ATTEMPT_TIMEOUT_MS 15000
 #define WIFI_BACKOFF_LIST {3000, 5000, 10000, 20000, 30000}
+
+// ---- ESP-NOW (M5, T06) ----
+// MAC Node 2 lay bang tools/print_mac. Mac dinh broadcast: chay duoc ngay nhung khong co ACK tang MAC
+// (callback gui luon bao OK); van do RTT duoc nho goi Ack cua ung dung.
+#define NODE2_MAC {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}  // TODO(verify): dien MAC that cua Node 2
+// 0 = theo kenh router. Khac 0: WiFi.begin() chi quet kenh nay va giu kenh khi mat router (TASKS_SPEC 3.5).
+// Hai node PHAI cung gia tri; dat bang kenh router de ESP-NOW song sot khi router tat.
+#define ESPNOW_CHANNEL 0
+#define ESPNOW_SEND_PERIOD_MS 2000
+#define ESPNOW_RTT_SLOTS 16                  // so goi dang cho Ack duoc nho de tinh RTT
+#define ESPNOW_ACK_QUEUE_LEN 8
+#define ESPNOW_WAIT_ACK_MS 100               // chu ky cho queue Ack trong task
+#define ESPNOW_WIFI_WAIT_MS 100              // cho coreiot_link bat Wi-Fi truoc khi esp_now_init
+#define STACK_ESPNOW 4096
+#define PRIO_ESPNOW 2

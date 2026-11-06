@@ -1,5 +1,6 @@
 // node1_sensor/shared_data.cpp
 #include "shared_data.h"
+#include <protocol.h>
 #include "config.h"
 
 namespace {
@@ -9,6 +10,8 @@ SemaphoreHandle_t i2cMutex = nullptr;
 SensorSample sample = {};
 ControlState control = {true, HEATER_PWM_OFF};
 NetState net = {};
+EspNowStats espnow = {};
+uint8_t aiClass = AI_CLASS_BOOTING;
 
 // RAII: moi duong return deu tra mutex.
 struct DataGuard {
@@ -71,6 +74,26 @@ void sharedSetNet(const NetState &n) {
 NetState sharedGetNet() {
   DataGuard g;
   return net;
+}
+
+void sharedSetAiClass(uint8_t cls) {
+  DataGuard g;
+  aiClass = cls;
+}
+
+uint8_t sharedGetAiClass() {
+  DataGuard g;
+  return aiClass;
+}
+
+void sharedSetEspNow(const EspNowStats &s) {
+  DataGuard g;
+  espnow = s;
+}
+
+EspNowStats sharedGetEspNow() {
+  DataGuard g;
+  return espnow;
 }
 
 bool i2cLock(uint32_t timeoutMs) {

@@ -21,6 +21,7 @@ struct LinkConfig {
   uint32_t wifiAttemptTimeoutMs;
   const uint32_t *wifiBackoffMs;
   size_t wifiBackoffCount;
+  uint8_t channel;  // 0 = theo router; khac 0 = ESPNOW_CHANNEL co dinh (TASKS_SPEC 3.5)
 };
 
 struct RpcRequest {

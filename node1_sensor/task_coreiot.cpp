@@ -91,7 +91,7 @@ void taskCoreiot(void *) {
   const LinkConfig cfg = {
       WIFI_SSID, WIFI_PASS, MQTT_HOST, MQTT_PORT, DEVICE_TOKEN, MQTT_CLIENT_ID,
       MQTT_BUFFER_SIZE, MQTT_KEEPALIVE_S, MQTT_SOCKET_TIMEOUT_S, MQTT_RETRY_MS,
-      WIFI_ATTEMPT_TIMEOUT_MS, WIFI_BACKOFF_MS, sizeof(WIFI_BACKOFF_MS) / sizeof(WIFI_BACKOFF_MS[0])};
+      WIFI_ATTEMPT_TIMEOUT_MS, WIFI_BACKOFF_MS, sizeof(WIFI_BACKOFF_MS) / sizeof(WIFI_BACKOFF_MS[0]), ESPNOW_CHANNEL};
   if (!linkBegin(cfg)) {
     appLog("MQTT", "init FAILED (out of memory), task stopped");
     vTaskDelete(nullptr);
