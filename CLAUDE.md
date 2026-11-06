@@ -14,29 +14,31 @@
 
 ---
 
-## 1. TRẠNG THÁI HIỆN TẠI (cập nhật 06/11/2026)
+## 1. TRẠNG THÁI HIỆN TẠI (cập nhật 06/11/2026, sau Task 2–7)
 
-### ✅ Đã hoàn thành
+> ⚠️ "Đã code" = **biên dịch được** (OhStem 3.1.3, partition `min_spiffs`), **chưa kiểm chứng trên kit**. Chỉ đánh dấu "đã chạy" khi có log Serial thật.
 
-| Milestone | Nội dung | File |
+### ✅ Đã code (build OK cả hai node)
+
+| Milestone | Nội dung | File chính |
 |---|---|---|
-| **M2 – Firmware lõi** | 4 task Node 1, 4 task Node 2, shared_data mutex, app_log, coreiot_link | Xem mục 2 |
+| **M2 – Firmware lõi** | task + shared_data mutex, app_log, coreiot_link | mục 2 |
+| **M4 – phần firmware** | RPC `cloudAlert` Node 2 (LCD, NeoPixel chớp, `SELF_TEST_ALERT`), telemetry `alert_level` | `node2_actuator/*` |
+| **M5 – ESP-NOW (T06)** | `EspNowSensorPkt/EspNowAckPkt`, RTT, xử lý reboot Node 1, safe mode, `espnow_age_s`, `ESPNOW_CHANNEL` | `task_espnow.cpp`, `task_espnow_rx.cpp`, `tools/parse_now_log.py` |
+| **M6 – Webserver (T07)** | WebServer.h + trang PROGMEM, REST API, `/config.json` LittleFS, AP cứu hộ | `task_web.cpp`, `common/web_common`, `common/config_store`, `web/index.html` |
+| **M7 – TinyML (T04, T05)** | TFLM (Chirale) trong `taskTinyml`, pipeline `ml/`, parity sketch, COLLECT_MODE | `task_tinyml.cpp`, `ml/*`, `tools/tinyml_parity/` |
+| **M8 – OTA (T14)** | OTA chunk MQTT, SHA256/MD5, NVS chống lặp, `make_ota_bin.sh` | `common/ota_client` |
+| **M9 – công cụ đo** | RTT, heap/stack, web latency, tổng hợp | `tools/*.py` |
 
-### 🔄 Code sẵn sàng, chờ cấu hình thực tế
+### 🔄 Chờ người dùng (cần kit/CoreIOT thật)
 
-| Milestone | Việc còn thiếu |
+| Việc | Ghi chú |
 |---|---|
-| **M3 – CoreIOT cơ bản** | Tạo `secrets.h` (WiFi/token), xác nhận MQTT host/port, hiệu chỉnh soil ADC, xác nhận địa chỉ LCD I2C |
-
-### ❌ Chưa code
-
-| Milestone | Mã T | File cần tạo |
-|---|---|---|
-| **M4 – Dashboard + RuleChain + Notification** | T11, T12, T13 | Cấu hình CoreIOT; thêm RPC `cloudAlert` vào `node2_actuator/task_coreiot.cpp` |
-| **M5 – ESP-NOW** | T06 | `node1_sensor/task_espnow.cpp`, `node2_actuator/task_espnow_rx.cpp`; thêm struct `Pkt/Cmd/Ack` vào `common/protocol.h` |
-| **M6 – Webserver** | T07 | `node1_sensor/task_web.cpp`, `node2_actuator/task_web.cpp`, `web/index.html` → `node*/web_assets.h` (PROGMEM) |
-| **M7 – TinyML** | T04, T05 | `node1_sensor/task_tinyml.cpp`, `node1_sensor/model.h`, `ml/collect_serial.py`, `ml/train.py`, `ml/export_tflite.py`, `ml/requirements.txt` |
-| **M8 – OTA** | T14 | `node1_sensor/task_ota.cpp`, `node2_actuator/task_ota.cpp` |
+| **Task 1 – giá trị thật** | `LCD_I2C_ADDR`, `SOIL_RAW_DRY/WET`, `NEOPIXEL_*`, `NODE2_MAC`, `ESPNOW_CHANNEL` (README bảng `TODO(verify)`) |
+| **M3** | `secrets.h` (+ `AP_PASS`), host/port từ *Check connectivity*, log kết nối |
+| **M4 – CoreIOT** | dashboard, alarm, RuleChain, Notification (COREIOT_SETUP.md 6–9) |
+| **M7 – dữ liệu thật** | `node1_sensor/model.h` hiện là **model DEMO** (`MODEL_IS_DEMO 1`): thu dữ liệu → train → export `--install` |
+| **Kiểm chứng trên kit** | ESP-NOW ≥ 200 gói + bài thử tắt router (`docs/evidence/T06/failover_test.txt`), web, parity 20/20, OTA ≥ 3 lần |
 
 ---
 
@@ -46,53 +48,58 @@
 
 | File | Task | Trạng thái |
 |---|---|---|
-| `node1_sensor.ino` | setup() + tạo task | ✅ |
-| `config.h` | Hằng số chân, ngưỡng, chu kỳ, MQTT | ✅ |
-| `secrets.h.example` | Mẫu WiFi/token | ✅ |
-| `shared_data.h/.cpp` | Mutex RAII, getter/setter thread-safe, mutex I2C | ✅ |
-| `tasks.h` | Khai báo 4 task | ✅ |
-| `task_sensor.cpp` | `taskSensor` – DHT20 + đất, sentinel khi lỗi | ✅ |
-| `task_led.cpp` | `taskLed` – NeoPixel sưởi Auto + an toàn cứng | ✅ |
-| `task_display.cpp` | `taskDisplay` – LCD mutex I2C, không clear() | ✅ |
-| `task_coreiot.cpp` | `taskCoreiot` – Wi-Fi backoff, MQTT, RPC setMode/setHeater | ✅ |
-| `task_tinyml.cpp` | `taskTinyml` – suy luận MLP | ❌ chưa có |
-| `task_espnow.cpp` | `taskEspnow` – gửi Pkt, nhận Ack/Cmd | ❌ chưa có |
-| `task_web.cpp` | `taskWeb` – WebServer.h + trang PROGMEM, cấu hình LittleFS | ❌ chưa có |
-| `task_ota.cpp` | `taskOta` – tải firmware theo chunk từ CoreIOT | ❌ chưa có |
-| `model.h` | Mảng C của model TFLite | ❌ chưa có (xuất từ ml/) |
+| `node1_sensor.ino` | setup() + tạo task + `[STATS]` | ✅ |
+| `config.h` | Hằng số chân, ngưỡng, chu kỳ, MQTT, ESP-NOW, web, TinyML, OTA | ✅ |
+| `secrets.h.example` | Mẫu WiFi/token/AP_PASS | ✅ |
+| `shared_data.h/.cpp` | Mutex RAII, getter/setter, mutex I2C, semaphore mẫu mới, `ai_class`, thống kê ESP-NOW, `sharedHoldSafe` | ✅ |
+| `tasks.h` | Khai báo 7 task + `coreiotLoadConfig()` | ✅ |
+| `task_sensor.cpp` | `taskSensor` – DHT20 + đất, sentinel, dòng `D,` khi `COLLECT_MODE` | ✅ |
+| `task_led.cpp` | `taskLed` – sưởi Auto + an toàn cứng (tắt khi lỗi/AI lớp 3) | ✅ |
+| `task_display.cpp` | `taskDisplay` – LCD, nhãn AI, `FAULT` | ✅ |
+| `task_coreiot.cpp` | `taskCoreiot` – link, telemetry (`ai_class`, `sensor_fault`), RPC, OTA, AP cứu hộ | ✅ |
+| `task_tinyml.cpp` | `taskTinyml` – TFLM MLP, đa số 3, 255 khi khởi động | ✅ |
+| `task_espnow.cpp` | `taskEspnow` – gửi gói 2 s, Ack, RTT, thống kê | ✅ |
+| `task_web.cpp` | `taskWeb` – WebServer.h, `/api/state`, `/api/mode`, `/api/heater` | ✅ |
+| `model.h` | Mảng TFLite `g_model` | ⚠️ DEMO (dữ liệu tổng hợp) |
+| `web_assets.h` | Trang PROGMEM (sinh bởi `tools/embed_web.py`) | ✅ |
+
+OTA không có `task_ota.cpp` riêng: `common/ota_client` chạy trong `taskCoreiot` vì PubSubClient không thread-safe (mọi publish/loop phải cùng một task).
 
 ### Node 2 (`node2_actuator/`)
 
 | File | Task | Trạng thái |
 |---|---|---|
-| `node2_actuator.ino` | setup() + tạo task | ✅ |
-| `config.h` | Hằng số + `USE_FAKE_SENSOR_DATA 1` | ✅ |
-| `secrets.h.example` | Mẫu WiFi/token | ✅ |
-| `shared_data.h/.cpp` | Mutex RAII, getter/setter | ✅ |
-| `tasks.h` | Khai báo 4 task | ✅ |
-| `task_control.cpp` | `taskControl` – luật Auto + safe mode; **hiện dùng fake data tam giác** | ✅ (tạm) |
-| `task_actuator.cpp` | `taskActuator` – D13 quạt, NeoPixel ẩm | ✅ |
-| `task_display.cpp` | `taskDisplay` – LCD, NO DATA khi stale | ✅ |
-| `task_coreiot.cpp` | `taskCoreiot` – Wi-Fi, MQTT, RPC setMode/setFan/setPump; **TODO: cloudAlert (M4)** | ✅ (thiếu cloudAlert) |
-| `task_espnow_rx.cpp` | `taskEspnowRx` – nhận Pkt, gửi Ack | ❌ chưa có |
-| `task_web.cpp` | `taskWeb` | ❌ chưa có |
-| `task_ota.cpp` | `taskOta` | ❌ chưa có |
+| `node2_actuator.ino` | setup() + tạo task + `[STATS]` | ✅ |
+| `config.h` | Hằng số + `USE_FAKE_SENSOR_DATA 0`, ESP-NOW, cloudAlert, web, OTA | ✅ |
+| `secrets.h.example` | Mẫu WiFi/token/AP_PASS | ✅ |
+| `shared_data.h/.cpp` | Mutex RAII, getter/setter, `CloudAlertState`, `sharedHoldSafe` | ✅ |
+| `tasks.h` | Khai báo 6 task + `coreiotLoadConfig()` | ✅ |
+| `task_control.cpp` | `taskControl` – luật Auto, safe mode khi stale/lỗi, `SELF_TEST_ALERT` | ✅ |
+| `task_actuator.cpp` | `taskActuator` – D13 quạt, NeoPixel ẩm / tím NO DATA / chớp cloudAlert | ✅ |
+| `task_display.cpp` | `taskDisplay` – LCD, NO DATA, N1 SENSOR FAULT, dòng cảnh báo | ✅ |
+| `task_coreiot.cpp` | `taskCoreiot` – link, RPC (+`cloudAlert`), telemetry (`espnow_age_s`, `alert_level`), OTA | ✅ |
+| `task_espnow_rx.cpp` | `taskEspnowRx` – nhận gói, kiểm seq/MAC/ver, gửi Ack | ✅ |
+| `task_web.cpp` | `taskWeb` – `/api/state`, `/api/mode`, `/api/fan`, `/api/pump` | ✅ |
+| `web_assets.h` | Trang PROGMEM | ✅ |
 
 ### Dùng chung (`common/`)
 
 | File | Nội dung | Trạng thái |
 |---|---|---|
-| `protocol.h` | Topic MQTT, tên RPC, tên khóa telemetry | ✅ (thiếu struct ESP-NOW Pkt/Cmd/Ack) |
-| `coreiot_link.h/.cpp` | Wi-Fi state machine backoff + MQTT + queue RPC | ✅ |
-| `app_log.h/.cpp` | Log Serial an toàn nhiều task (mutex) | ✅ |
+| `protocol.h` | Topic MQTT/OTA, RPC, khóa telemetry, gói ESP-NOW, sentinel, `AI_CLASS_*` | ✅ |
+| `coreiot_link.h/.cpp` | Wi-Fi backoff + kênh cố định + AP cứu hộ + MQTT + queue RPC + hook topic phụ | ✅ |
+| `config_store.h/.cpp` | `/config.json` LittleFS (tmp + rename), ưu tiên hơn `secrets.h` | ✅ |
+| `web_common.h/.cpp` | JSON, lỗi 400/409, `/api/config`, thông tin hệ thống | ✅ |
+| `ota_client.h/.cpp` | OTA ThingsBoard MQTT | ✅ (chưa thử trên CoreIOT) |
+| `app_log.h/.cpp` | Log Serial an toàn nhiều task (mutex), `appLogRaw` | ✅ |
 
 ### ML (`ml/`)
 
-Tất cả **chưa có** – tạo ở M7.
+`features.py` (chuẩn hóa, sentinel – khớp `config.h`), `collect_serial.py`, `train.py`, `export_tflite.py`, `make_demo_data.py` (chỉ để thử đường ống), `requirements.txt`. Kết quả ở `ml/out/` (không commit).
 
 ### Tools (`tools/`)
 
-| Sketch | Dùng để |
+| Sketch/script | Dùng để |
 |---|---|
 | `i2c_scan/` | Quét địa chỉ I2C → xác nhận LCD = 0x21? |
 | `adc_calibrate/` | Đọc A1 thô để lấy SOIL_RAW_DRY / SOIL_RAW_WET |
@@ -101,6 +108,11 @@ Tất cả **chưa có** – tạo ở M7.
 | `lcd_dht20/` | Test LCD + DHT20 độc lập |
 | `neopixel_test/` | Test NeoPixel chân/màu |
 | `env_info/` | In thông tin core, chip, flash |
+| `tinyml_parity/` | Parity test 20 vector TFLM vs Python |
+| `collect_firmware/` | Hướng dẫn build Node 1 với `COLLECT_MODE=1` |
+| `flash.sh`, `make_ota_bin.sh` | Build/nạp/log (partition `min_spiffs`); xuất `.bin` OTA + SHA256/MD5 |
+| `embed_web.py` | `web/index.html` → `node*/web_assets.h` |
+| `parse_now_log.py`, `parse_stats_log.py`, `web_latency.py`, `summarize_measurements.py` | Số đo Chương 4 |
 
 ---
 
