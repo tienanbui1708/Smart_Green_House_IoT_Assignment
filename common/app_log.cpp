@@ -7,6 +7,14 @@ namespace {
 constexpr size_t LOG_LINE_MAX = 192;
 constexpr TickType_t LOG_LOCK_TIMEOUT = pdMS_TO_TICKS(50);
 SemaphoreHandle_t serialMutex = nullptr;
+
+void writeLine(const char *tag, const char *line) {
+  // Het thoi gian cho thi bo dong log, khong de task dieu khien bi chan vi Serial.
+  if (serialMutex != nullptr && xSemaphoreTake(serialMutex, LOG_LOCK_TIMEOUT) != pdTRUE) return;
+  if (tag != nullptr) Serial.printf("[%s] %s\n", tag, line);
+  else Serial.printf("%s\n", line);
+  if (serialMutex != nullptr) xSemaphoreGive(serialMutex);
+}
 }  // namespace
 
 void logInit() {
@@ -20,13 +28,14 @@ void appLog(const char *tag, const char *fmt, ...) {
   va_start(args, fmt);
   vsnprintf(line, sizeof(line), fmt, args);
   va_end(args);
+  writeLine(tag, line);
+}
 
-  if (serialMutex == nullptr) {
-    Serial.printf("[%s] %s\n", tag, line);
-    return;
-  }
-  // Het thoi gian cho thi bo dong log, khong de task dieu khien bi chan vi Serial.
-  if (xSemaphoreTake(serialMutex, LOG_LOCK_TIMEOUT) != pdTRUE) return;
-  Serial.printf("[%s] %s\n", tag, line);
-  xSemaphoreGive(serialMutex);
+void appLogRaw(const char *fmt, ...) {
+  char line[LOG_LINE_MAX];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(line, sizeof(line), fmt, args);
+  va_end(args);
+  writeLine(nullptr, line);
 }

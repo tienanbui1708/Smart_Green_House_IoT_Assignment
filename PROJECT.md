@@ -203,7 +203,7 @@ Gói lệnh Node 2 → Node 1 (`Cmd`) là mục mở rộng (M5b), chưa làm. H
 
 ### 7.2 Telemetry MQTT (topic `v1/devices/me/telemetry`)
 
-Node 1: `temperature, humidity, soil, ai_class, heater, auto, rssi, heap, uptime, fw_version` (và `sensor_fault: true` khi `ai_class = 3`)
+Node 1: `temperature, humidity, soil, ai_class, sensor_fault, heater, auto, rssi, heap, uptime, fw_version`. `sensor_fault` luôn gửi (true khi DHT20 đọc lỗi **hoặc** `ai_class = 3`); khi `sensor_fault = true` **không gửi** `temperature/humidity/soil`. `ai_class` không gửi khi còn 255 (chưa đủ 5 mẫu).
 Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s, alert_level` (`alert_level` = mức `cloudAlert` đang hiện, 0 = không có)
 
 Dùng tên khóa cố định, không đổi giữa chừng (dashboard và RuleChain phụ thuộc).
@@ -232,7 +232,7 @@ Phản hồi two-way RPC tại `v1/devices/me/rpc/response/<id>`. Lệnh bị t�
 - **Nhãn (4 lớp):** `0` bình thường, `1` đất khô, `2` quá nóng/quá ẩm, `3` cảm biến lỗi.
 - **Mô hình:** MLP nhỏ (ví dụ 15 → 32 → 16 → 4, ReLU, Softmax). Số lớp/nơ-ron có thể đổi nếu RAM/độ chính xác yêu cầu.
 - **Dữ liệu:** thu bằng chính kit (`ml/collect_serial.py`). Kịch bản gợi ý: bình thường (để yên), nóng (đưa nguồn ấm lại gần DHT20), ẩm (hà hơi/khăn ẩm), đất khô/ướt (cắm cảm biến trong không khí và trong cốc nước), lỗi (rút dây/ngắt cảm biến). Lớp "lỗi" có thể bổ sung giá trị phi lý tổng hợp, **nhưng báo cáo phải tách bạch phần dữ liệu thật và phần tổng hợp**.
-- **Export:** TFLite **float32 trước** (an toàn, mô hình chỉ vài KB), **INT8 nếu chạy tốt** để có số liệu so sánh kích thước/độ chính xác/thời gian; ghi vào `model.h`. Báo cáo ghi rõ bản nào chạy thật trên thiết bị. Thư viện chạy trên thiết bị: `Chirale_TensorFlowLite` và/hoặc `ArduTFLite` (**CẦN XÁC MINH** biên dịch được trên core OhStem). Phương án dự phòng: tự cài suy luận MLP bằng C, ghi rõ trong báo cáo. Chuẩn hóa dùng **hằng số cố định** (`TINYML_GUIDE.md` mục 2.2). Quy tắc sentinel khi cảm biến lỗi: T=−40, H=0.
+- **Export:** TFLite **float32 trước** (an toàn, mô hình chỉ vài KB), **INT8 nếu chạy tốt** để có số liệu so sánh kích thước/độ chính xác/thời gian; ghi vào `model.h`. Báo cáo ghi rõ bản nào chạy thật trên thiết bị. Thư viện chạy trên thiết bị: `Chirale_TensorFLowLite` 2.0.0 (đã biên dịch được với core OhStem 3.1.3 ngày 2026-11-06; op resolver chỉ cần `FULLY_CONNECTED` + `SOFTMAX`). Phương án dự phòng: tự cài suy luận MLP bằng C, ghi rõ trong báo cáo. Chuẩn hóa dùng **hằng số cố định** (`TINYML_GUIDE.md` mục 2.2). Quy tắc sentinel khi cảm biến lỗi: T=−40, H=0.
 - **Cần ghi số đo:** accuracy trên tập test thật (tách riêng khỏi dữ liệu lỗi tổng hợp), confusion matrix, so sánh với baseline luật ngưỡng, kích thước model, RAM (tensor arena), thời gian suy luận (µs/ms), kết quả parity test thiết bị vs Python.
 - **Tác động hệ thống (T04):** khi `ai_class = 3` (cảm biến lỗi) Node 1 **không gửi** `temperature/humidity/soil` hỏng lên Cloud, chỉ gửi `ai_class` và `sensor_fault: true`; LCD hiện `FAULT`. Chi tiết: `TINYML_GUIDE.md` mục 8.3.
 

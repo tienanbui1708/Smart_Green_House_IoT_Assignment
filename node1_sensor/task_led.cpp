@@ -2,6 +2,7 @@
 // Luat suoi Auto (PROJECT.md 8.3) + an toan cung (8.4); NeoPixel kenh do = muc suoi mo phong.
 #include <Adafruit_NeoPixel.h>
 #include <app_log.h>
+#include <protocol.h>
 #include "config.h"
 #include "shared_data.h"
 #include "tasks.h"
@@ -16,8 +17,8 @@ uint8_t heaterForTemperature(float t) {
 }
 
 void applyAutoRules(const SensorSample &s) {
-  // Mat cam bien thi tat suoi: khong biet nhiet do thi khong suoi.
-  if (!s.dhtOk) {
+  // Mat cam bien (hoac AI bao loi) thi tat suoi: khong tin nhiet do thi khong suoi.
+  if (!s.dhtOk || sharedGetAiClass() == AI_CLASS_SENSOR_FAULT) {
     sharedSetAutoHeater(HEATER_PWM_OFF);
     return;
   }

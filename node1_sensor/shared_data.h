@@ -38,8 +38,9 @@ enum class CmdResult : uint8_t { Ok, RejectedAutoMode };
 
 void sharedInit();  // goi trong setup() truoc khi tao task
 
-void sharedSetSample(const SensorSample &sample);
+void sharedSetSample(const SensorSample &sample);  // dong thoi bao 'co mau moi' cho task TinyML
 SensorSample sharedGetSample();
+bool sharedWaitNewSample(uint32_t timeoutMs);      // true khi co mau moi (mot nguoi doi duy nhat)
 
 ControlState sharedGetControl();
 void sharedSetAutoMode(bool autoMode);

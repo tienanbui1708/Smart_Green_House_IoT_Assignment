@@ -83,6 +83,10 @@ void taskSensor(void *) {
       appLog("SENSOR", "DHT20 recovered after %lu failures", (unsigned long)failStreak);
       failStreak = 0;
     }
+#if COLLECT_MODE
+    // Dinh dang co dinh cho ml/collect_serial.py; cung gia tri (da ap sentinel) ma TinyML se thay.
+    appLogRaw("D,%lu,%.1f,%.1f,%u", (unsigned long)s.takenMs, s.temperature, s.humidity, s.soil);
+#endif
 #if DEBUG_LOG
     appLog("SENSOR", "seq=%lu T=%.1f H=%.1f soil=%u%% raw=%u", (unsigned long)s.seq,
            s.temperature, s.humidity, s.soil, s.soilRaw);
