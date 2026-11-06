@@ -21,6 +21,7 @@ TaskEntry appTasks[] = {
     {"led", taskLed, STACK_LED, PRIO_LED, nullptr},
     {"coreiot", taskCoreiot, STACK_COREIOT, PRIO_COREIOT, nullptr},
     {"espnow", taskEspnow, STACK_ESPNOW, PRIO_ESPNOW, nullptr},
+    {"tinyml", taskTinyml, STACK_TINYML, PRIO_TINYML, nullptr},
     {"web", taskWeb, STACK_WEB, PRIO_WEB, nullptr},
 };
 

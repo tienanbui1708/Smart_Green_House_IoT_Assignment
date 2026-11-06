@@ -6,6 +6,7 @@
 namespace {
 SemaphoreHandle_t dataMutex = nullptr;
 SemaphoreHandle_t i2cMutex = nullptr;
+SemaphoreHandle_t newSampleSem = nullptr;  // binary: taskSensor give, taskTinyml take
 
 SensorSample sample = {};
 ControlState control = {true, HEATER_PWM_OFF};
@@ -23,12 +24,20 @@ struct DataGuard {
 void sharedInit() {
   dataMutex = xSemaphoreCreateMutex();
   i2cMutex = xSemaphoreCreateMutex();
-  configASSERT(dataMutex != nullptr && i2cMutex != nullptr);
+  newSampleSem = xSemaphoreCreateBinary();
+  configASSERT(dataMutex != nullptr && i2cMutex != nullptr && newSampleSem != nullptr);
 }
 
 void sharedSetSample(const SensorSample &s) {
-  DataGuard g;
-  sample = s;
+  {
+    DataGuard g;
+    sample = s;
+  }
+  xSemaphoreGive(newSampleSem);  // khong chan taskSensor neu chua ai lay
+}
+
+bool sharedWaitNewSample(uint32_t timeoutMs) {
+  return xSemaphoreTake(newSampleSem, pdMS_TO_TICKS(timeoutMs)) == pdTRUE;
 }
 
 SensorSample sharedGetSample() {

@@ -29,16 +29,17 @@ float round1(float v) {
 bool publishTelemetry() {
   SensorSample s = sharedGetSample();
   ControlState c = sharedGetControl();
+  uint8_t cls = sharedGetAiClass();
   JsonDocument doc;
-  if (s.seq != 0) {
-    // DHT20 loi thi khong gui gia tri sentinel len Cloud (tranh bao dong gia).
-    if (s.dhtOk) {
-      doc[TK_TEMPERATURE] = round1(s.temperature);
-      doc[TK_HUMIDITY] = round1(s.humidity);
-    }
+  // Loi cam bien (DHT20 doc that bai hoac AI bao lop 3): khong dua gia tri hong len Cloud (T04, PROJECT.md 8.1).
+  bool fault = (s.seq != 0 && !s.dhtOk) || cls == AI_CLASS_SENSOR_FAULT;
+  if (s.seq != 0 && !fault) {
+    doc[TK_TEMPERATURE] = round1(s.temperature);
+    doc[TK_HUMIDITY] = round1(s.humidity);
     doc[TK_SOIL] = s.soil;
   }
-  // TODO(M7): them ai_class va sensor_fault khi co task_tinyml.
+  if (cls != AI_CLASS_BOOTING) doc[TK_AI_CLASS] = cls;  // 255 = chua du cua so: khong gui
+  doc[TK_SENSOR_FAULT] = fault;
   doc[TK_HEATER] = c.heater;
   doc[TK_AUTO] = c.autoMode;
   doc[TK_RSSI] = linkRssi();

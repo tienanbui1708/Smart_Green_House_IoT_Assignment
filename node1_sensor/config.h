@@ -98,3 +98,23 @@
 #define AP_IDLE_RETRY_MS 30000            // AP khong co may 30 s -> thu lai STA
 #define STACK_WEB 8192
 #define PRIO_WEB 1
+
+// ---- TinyML (M7, T04) - phai khop ml/features.py ----
+// 1: task sensor in them dong 'D,<ms>,<t>,<h>,<soil>' cho ml/collect_serial.py (tools/collect_firmware/README.md).
+#ifndef COLLECT_MODE
+#define COLLECT_MODE 0
+#endif
+#define AI_WINDOW 5                       // so mau trong cua so (5 x 2 s)
+#define AI_FEATURES 3                     // t, h, soil
+#define AI_CLASSES 4
+#define AI_NORM_T_OFFSET 25.0f            // t_n = (T - 25) / 25  (TINYML_GUIDE 2.2)
+#define AI_NORM_T_SCALE 25.0f
+#define AI_NORM_H_OFFSET 50.0f
+#define AI_NORM_H_SCALE 50.0f
+#define AI_NORM_S_OFFSET 50.0f
+#define AI_NORM_S_SCALE 50.0f
+#define AI_SMOOTH_N 3                     // nhan cong bo = da so 3 lan gan nhat
+#define AI_ARENA_SIZE (8 * 1024)          // TODO(verify): chinh theo parity test (dung + 20 %)
+#define AI_WAIT_SAMPLE_MS 3000            // cho mau moi; qua han thi log va doi tiep
+#define STACK_TINYML 8192
+#define PRIO_TINYML 2
