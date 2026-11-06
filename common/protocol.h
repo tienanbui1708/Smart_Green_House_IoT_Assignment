@@ -15,7 +15,11 @@ constexpr const char *RPC_SET_MODE = "setMode";        // params: true=Auto, fal
 constexpr const char *RPC_SET_HEATER = "setHeater";    // Node 1, params 0..255, chi Manual
 constexpr const char *RPC_SET_FAN = "setFan";          // Node 2, params bool, chi Manual
 constexpr const char *RPC_SET_PUMP = "setPump";        // Node 2, params bool, chi Manual
-constexpr const char *RPC_CLOUD_ALERT = "cloudAlert";  // Node 2, lam o M4
+constexpr const char *RPC_CLOUD_ALERT = "cloudAlert";  // Node 2, moi che do; params {"level":0..2,"msg":"<=16"}
+
+// ---- cloudAlert ----
+constexpr unsigned CLOUD_ALERT_LEVEL_MAX = 2;  // 0 xoa, 1 canh bao (vang), 2 nghiem trong (do)
+constexpr unsigned CLOUD_ALERT_MSG_MAX = 16;   // vua mot dong LCD 16x2
 
 // ---- Ly do tu choi RPC ----
 constexpr const char *RPC_REASON_AUTO_MODE = "auto_mode";
@@ -37,3 +41,4 @@ constexpr const char *TK_HEAP = "heap";
 constexpr const char *TK_UPTIME = "uptime";
 constexpr const char *TK_FW_VERSION = "fw_version";
 constexpr const char *TK_ESPNOW_AGE_S = "espnow_age_s";
+constexpr const char *TK_ALERT_LEVEL = "alert_level";  // Node 2: muc cloudAlert dang hien (0 = khong)

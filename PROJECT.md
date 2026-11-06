@@ -201,7 +201,7 @@ Gói lệnh Node 2 → Node 1 (`Cmd`) và `Ack` dùng cùng khuôn `ver/seq`. Ha
 ### 7.2 Telemetry MQTT (topic `v1/devices/me/telemetry`)
 
 Node 1: `temperature, humidity, soil, ai_class, heater, auto, rssi, heap, uptime, fw_version` (và `sensor_fault: true` khi `ai_class = 3`)
-Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s`
+Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s, alert_level` (`alert_level` = mức `cloudAlert` đang hiện, 0 = không có)
 
 Dùng tên khóa cố định, không đổi giữa chừng (dashboard và RuleChain phụ thuộc).
 

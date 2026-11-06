@@ -27,7 +27,7 @@
 #define CONTROL_PERIOD_MS 500
 #define FAKE_DATA_PERIOD_MS 2000          // cung chu ky Node 1 gui
 #define DISPLAY_PERIOD_MS 500
-#define ACTUATOR_PERIOD_MS 200
+#define ACTUATOR_PERIOD_MS 50             // du min de chop canh bao 250 ms
 #define STATS_PERIOD_MS 10000
 #define DATA_STALE_MS 10000               // PROJECT.md 8.2: > 10 s la NO DATA
 
@@ -38,6 +38,17 @@
 #define PUMP_OFF_SOIL_ABOVE 60
 #define NEO_H_BLUE_BELOW 50.0f
 #define NEO_H_RED_ABOVE 75.0f
+
+// ---- cloudAlert (M4, PROJECT.md 7.3) ----
+#define ALERT_DURATION_MS 10000           // msg hien tren LCD 10 s, nhan lai thi gia han
+#define ALERT_BLINK_L1_MS 500             // chu ky chop vang (sang nua chu ky)
+#define ALERT_BLINK_L2_MS 250             // chu ky chop do
+#define ALERT_L1_RGB 255, 180, 0
+#define ALERT_L2_RGB 255, 0, 0
+// 1: taskControl tu kich hoat level 1 (5 s) -> level 2 (5 s) -> 0 de thu LCD/NeoPixel khong can Cloud.
+#define SELF_TEST_ALERT 0
+#define SELF_TEST_START_MS 3000
+#define SELF_TEST_STEP_MS 5000
 
 // ---- Task ----
 #define STACK_CONTROL 4096

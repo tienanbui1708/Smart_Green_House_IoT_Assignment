@@ -32,6 +32,19 @@ void produceFakeSample(uint32_t &seq) {
 }
 #endif
 
+#if SELF_TEST_ALERT
+// Thu LCD/NeoPixel cua cloudAlert khong can Cloud: L1 -> L2 -> xoa, moi buoc SELF_TEST_STEP_MS.
+void runAlertSelfTest(uint8_t &step) {
+  static const uint8_t LEVELS[] = {1, 2, 0};
+  static const char *const MSGS[] = {"SELFTEST WARN", "SELFTEST CRIT", ""};
+  if (step >= sizeof(LEVELS)) return;
+  if (millis() < SELF_TEST_START_MS + step * (uint32_t)SELF_TEST_STEP_MS) return;
+  sharedSetAlert(LEVELS[step], MSGS[step], SELF_TEST_STEP_MS);
+  appLog("CTRL", "self-test cloudAlert level=%u", LEVELS[step]);
+  step++;
+}
+#endif
+
 bool fanRule(const SensorView &v) {
   return v.temperature > FAN_ON_T_ABOVE || v.humidity > FAN_ON_H_ABOVE;
 }
@@ -62,7 +75,13 @@ void taskControl(void *) {
   uint32_t seq = 0;
   uint32_t lastFakeMs = millis() - FAKE_DATA_PERIOD_MS;
 #endif
+#if SELF_TEST_ALERT
+  uint8_t selfTestStep = 0;
+#endif
   for (;;) {
+#if SELF_TEST_ALERT
+    runAlertSelfTest(selfTestStep);
+#endif
 #if USE_FAKE_SENSOR_DATA
     if (millis() - lastFakeMs >= FAKE_DATA_PERIOD_MS) {
       produceFakeSample(seq);

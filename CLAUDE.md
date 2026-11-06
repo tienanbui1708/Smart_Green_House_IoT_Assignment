@@ -163,7 +163,7 @@ Nguồn sự thật: `common/protocol.h` + `PROJECT.md` mục 7. Sửa giao th�
 **Node 1:** `temperature, humidity, soil, ai_class, sensor_fault, heater, auto, rssi, heap, uptime, fw_version`
 > Khi DHT20 lỗi: **không gửi** `temperature/humidity/soil`, chỉ gửi `ai_class=3, sensor_fault=true`.
 
-**Node 2:** `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s`
+**Node 2:** `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s, alert_level`
 
 **OTA (cả 2 node):** `current_fw_title, current_fw_version, fw_state, fw_error`
 

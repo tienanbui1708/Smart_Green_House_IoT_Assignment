@@ -26,6 +26,7 @@ bool publishTelemetry() {
   doc[TK_HEAP] = ESP.getFreeHeap();
   doc[TK_UPTIME] = millis() / 1000;
   doc[TK_FW_VERSION] = FW_VERSION;
+  doc[TK_ALERT_LEVEL] = sharedGetAlert().level;
   // TODO(M5): them espnow_age_s khi co du lieu ESP-NOW that (du lieu gia khong co y nghia).
 
   char json[TELEMETRY_JSON_MAX];
@@ -55,6 +56,19 @@ const char *rpcSetSwitch(JsonVariantConst params, CmdResult (*setter)(bool)) {
   return nullptr;
 }
 
+// Moi che do; chi hien thi, khong doi fan/pump/auto (COREIOT_SETUP.md 9.2).
+const char *rpcCloudAlert(JsonVariantConst params) {
+  if (!params.is<JsonObjectConst>()) return RPC_REASON_BAD_PARAMS;
+  JsonVariantConst level = params["level"];
+  if (!level.is<int>()) return RPC_REASON_BAD_PARAMS;
+  int lv = level.as<int>();
+  if (lv < 0 || lv > (int)CLOUD_ALERT_LEVEL_MAX) return RPC_REASON_BAD_PARAMS;
+  const char *msg = params["msg"] | "";
+  sharedSetAlert((uint8_t)lv, msg, ALERT_DURATION_MS);
+  appLog("RPC", "cloudAlert level=%d msg='%.16s'", lv, msg);
+  return nullptr;
+}
+
 void handleRpc(const RpcRequest &req) {
   JsonDocument in;
   const char *reason = nullptr;
@@ -67,7 +81,7 @@ void handleRpc(const RpcRequest &req) {
     if (strcmp(method, RPC_SET_MODE) == 0) reason = rpcSetMode(params);
     else if (strcmp(method, RPC_SET_FAN) == 0) reason = rpcSetSwitch(params, sharedSetManualFan);
     else if (strcmp(method, RPC_SET_PUMP) == 0) reason = rpcSetSwitch(params, sharedSetManualPump);
-    // TODO(M4): cloudAlert (COREIOT_SETUP.md 9.7); hien tai tra unknown_method.
+    else if (strcmp(method, RPC_CLOUD_ALERT) == 0) reason = rpcCloudAlert(params);
     else reason = RPC_REASON_UNKNOWN_METHOD;
   }
   bool sent = linkRespondRpc(req.id, reason);
