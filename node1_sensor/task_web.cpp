@@ -40,7 +40,8 @@ void handleState() {
   doc["espnow_acked"] = e.acked;
   doc["espnow_ack_pct"] = e.sent ? (uint32_t)((uint64_t)e.acked * 100 / e.sent) : 0;
   doc["espnow_rtt_us"] = e.lastRttUs;
-  doc["espnow_ack_age_s"] = e.lastAckMs ? (millis() - e.lastAckMs) / 1000 : -1;
+  // -1 = chua co Ack nao (ep kieu: tranh -1 bi doi thanh 4294967295 khi tron voi uint32_t)
+  doc["espnow_ack_age_s"] = e.lastAckMs ? (int32_t)((millis() - e.lastAckMs) / 1000) : (int32_t)-1;
   webAddSystemInfo(doc, FW_VERSION, n.mqtt);
   webSendJson(server, 200, doc);
 }
