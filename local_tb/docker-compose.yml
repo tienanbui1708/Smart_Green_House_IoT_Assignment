@@ -1,0 +1,26 @@
+# local_tb/docker-compose.yml
+# N07 (tùy chọn) – ThingsBoard tự chạy local bằng Docker.
+# Chỉ làm sau khi T04–T14 đã ổn. Điểm: 1.0 (nâng cao).
+# Hướng dẫn chi tiết: COREIOT_SETUP.md mục 15.
+#
+# Cách chạy:
+#   cd local_tb
+#   docker compose up -d
+#   # Lần đầu tiên cần chạy bước install theo tài liệu ThingsBoard.
+#   # Truy cập: http://localhost:8080
+
+services:
+  mytb:
+    restart: always
+    image: "thingsboard/tb-postgres"
+    ports:
+      - "8080:9090"
+      - "1883:1883"
+      - "7070:7070"
+      - "5683-5688:5683-5688/udp"
+    environment:
+      TB_QUEUE_TYPE: in-memory
+    volumes:
+      - ./tb-data:/data
+      - ./tb-logs:/var/log/thingsboard
+

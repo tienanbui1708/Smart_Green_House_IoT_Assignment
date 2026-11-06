@@ -1,6 +1,28 @@
-secrets.h
+# Secrets (WiFi/token) – NEVER commit
+node1_sensor/secrets.h
+node2_actuator/secrets.h
+
+# Firmware binaries (dùng Git Releases hoặc lưu tạm bên ngoài)
 *.bin
+*.elf
 build/
+.pio/
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
 venv/
+.venv/
+ml/data/*.csv
+
+# macOS / Windows
 .DS_Store
+Thumbs.db
+
+# Arduino IDE tạm
+*.ino.globals.h
+
+# ThingsBoard local data (N07)
+local_tb/tb-data/
+local_tb/tb-logs/
