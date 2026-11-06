@@ -5,12 +5,18 @@
 #endif
 #include <ArduinoJson.h>
 #include <app_log.h>
+#include <config_store.h>
 #include <coreiot_link.h>
 #include <protocol.h>
 #include "config.h"
 #include "secrets.h"
 #include "shared_data.h"
 #include "tasks.h"
+
+#ifndef AP_PASS
+#error "secrets.h thieu AP_PASS (mat khau AP cuu ho >= 8 ky tu): xem secrets.h.example"
+#endif
+static_assert(sizeof(AP_PASS) - 1 >= 8, "AP_PASS phai >= 8 ky tu (WPA2)");
 
 namespace {
 constexpr uint32_t WIFI_BACKOFF_MS[] = WIFI_BACKOFF_LIST;
@@ -90,11 +96,22 @@ void handleRpc(const RpcRequest &req) {
 }
 }  // namespace
 
+void coreiotLoadConfig() {
+  NetConfig defaults = {};
+  if (!configFill(defaults, WIFI_SSID, WIFI_PASS, MQTT_HOST, MQTT_PORT, DEVICE_TOKEN)) {
+    appLog("CFG", "secrets.h field too long, check lengths");
+  }
+  configLoad(defaults);
+}
+
 void taskCoreiot(void *) {
+  // static: LinkConfig chi giu con tro, chuoi phai song suot doi task.
+  static const NetConfig net = configGet();
   const LinkConfig cfg = {
-      WIFI_SSID, WIFI_PASS, MQTT_HOST, MQTT_PORT, DEVICE_TOKEN, MQTT_CLIENT_ID,
+      net.ssid, net.pass, net.host, net.port, net.token, MQTT_CLIENT_ID,
       MQTT_BUFFER_SIZE, MQTT_KEEPALIVE_S, MQTT_SOCKET_TIMEOUT_S, MQTT_RETRY_MS,
       WIFI_ATTEMPT_TIMEOUT_MS, WIFI_BACKOFF_MS, sizeof(WIFI_BACKOFF_MS) / sizeof(WIFI_BACKOFF_MS[0]), ESPNOW_CHANNEL};
+  linkEnableRescueAp({AP_SSID, AP_PASS, AP_BOOT_TIMEOUT_MS, AP_LOST_TIMEOUT_MS, AP_IDLE_RETRY_MS});
   if (!linkBegin(cfg)) {
     appLog("MQTT", "init FAILED (out of memory), task stopped");
     vTaskDelete(nullptr);

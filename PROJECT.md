@@ -153,13 +153,14 @@ smart-greenhouse/
 │  ├─ task_sensor.cpp  task_tinyml.cpp  task_espnow.cpp
 │  ├─ task_coreiot.cpp task_web.cpp     task_display.cpp  task_ota.cpp
 │  ├─ model.h                   # xuất từ ml/export_tflite.py
-│  └─ data/                     # file web cho LittleFS
+│  └─ web_assets.h              # trang web PROGMEM, sinh bởi tools/embed_web.py từ web/index.html
 ├─ node2_actuator/
 │  ├─ node2_actuator.ino
 │  ├─ config.h  secrets.h.example  shared_data.h/.cpp
 │  ├─ task_espnow_rx.cpp task_control.cpp task_actuator.cpp
 │  ├─ task_coreiot.cpp task_web.cpp task_display.cpp task_ota.cpp
-│  └─ data/
+│  └─ web_assets.h
+├─ web/index.html               # nguồn giao diện web dùng chung hai node (T07)
 ├─ common/                      # định nghĩa dùng chung 2 node (gói ESP-NOW, tên method RPC)
 │  └─ protocol.h
 ├─ ml/
@@ -262,7 +263,7 @@ Ngưỡng ở trên là giá trị khởi đầu, phải hiệu chỉnh theo s�
 
 ### 8.5 Webserver (T07)
 
-Tự hiện thực bằng `ESPAsyncWebServer` + LittleFS (**CẦN XÁC MINH** thư viện tương thích với core). Trang tối thiểu: Trang chủ (số liệu thời gian thực qua WebSocket), Điều khiển (Auto/Manual, chấp hành), Thông tin (SSID, IP, MAC, heap, uptime, phiên bản firmware), Cài đặt (WiFi, token, host, port; lưu LittleFS; khởi động lại). Nếu mất Wi-Fi: bật AP cứu hộ (`WIFI_AP_STA`), không chặn các task khác.
+Tự hiện thực bằng **`WebServer.h` có sẵn trong core** (đã chốt theo `TASKS_SPEC.md` 4.1; không cần thư viện ngoài), `server.handleClient()` trong `taskWeb` mỗi 5 ms. Giao diện `web/index.html` nhúng vào firmware dạng `PROGMEM` (`tools/embed_web.py` → `nodeX/web_assets.h`), không cần bước upload LittleFS. **LittleFS chỉ lưu `/config.json`** (`common/config_store`, ưu tiên hơn `secrets.h`). Một trang, 4 tab: Trang chủ (số liệu, `fetch('/api/state')` mỗi 2 s), Điều khiển (Auto/Manual, chấp hành; bị khóa khi Auto), Thông tin (SSID, IP, MAC, RSSI, heap, uptime, phiên bản firmware, MQTT/ESP-NOW), Cài đặt (WiFi, token, host, port; lưu LittleFS; khởi động lại). API: `GET /api/state`, `POST /api/mode`, `/api/heater` (Node 1), `/api/fan`, `/api/pump` (Node 2), `/api/config`; lệnh bị từ chối khi Auto → HTTP 409 `{"ok":false,"reason":"auto_mode"}`. Nếu mất Wi-Fi: AP cứu hộ `GREENHOUSE-N1-SETUP`/`-N2-` (`WIFI_AP_STA`, cùng kênh ESP-NOW, 20 s lúc khởi động/60 s khi mất STA), không chặn các task khác.
 
 ### 8.6 CoreIOT (T11, T12, T13)
 
