@@ -8,6 +8,7 @@ SensorView sensor = {};
 ActuatorState actuators = {true, false, false, true, false};
 NetState net = {};
 CloudAlertState alert = {};
+bool safeHold = false;  // true: sap khoi dong lai, khong cho bat chap hanh nua
 
 struct DataGuard {
   DataGuard() { xSemaphoreTake(dataMutex, portMAX_DELAY); }
@@ -51,19 +52,19 @@ ActuatorState sharedGetActuators() {
 
 void sharedSetAutoMode(bool autoMode) {
   DataGuard g;
-  actuators.autoMode = autoMode;
+  if (!safeHold) actuators.autoMode = autoMode;
 }
 
 CmdResult sharedSetManualFan(bool on) {
   DataGuard g;
-  if (actuators.autoMode) return CmdResult::RejectedAutoMode;
+  if (actuators.autoMode || safeHold) return CmdResult::RejectedAutoMode;
   actuators.fan = on;
   return CmdResult::Ok;
 }
 
 CmdResult sharedSetManualPump(bool on) {
   DataGuard g;
-  if (actuators.autoMode) return CmdResult::RejectedAutoMode;
+  if (actuators.autoMode || safeHold) return CmdResult::RejectedAutoMode;
   actuators.pump = on;
   return CmdResult::Ok;
 }
@@ -72,9 +73,17 @@ void sharedApplyAuto(bool fan, bool pump, bool dataStale, bool dataFault) {
   DataGuard g;
   actuators.dataStale = dataStale;
   actuators.dataFault = dataFault;
-  if (!actuators.autoMode) return;
+  if (!actuators.autoMode || safeHold) return;
   actuators.fan = fan;
   actuators.pump = pump;
+}
+
+void sharedHoldSafe() {
+  DataGuard g;
+  safeHold = true;
+  actuators.autoMode = true;
+  actuators.fan = false;
+  actuators.pump = false;
 }
 
 void sharedSetNet(const NetState &n) {

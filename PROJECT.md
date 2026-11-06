@@ -208,7 +208,7 @@ Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s, alert_le
 
 Dùng tên khóa cố định, không đổi giữa chừng (dashboard và RuleChain phụ thuộc).
 
-Khóa bổ sung **khi OTA** (cả hai node, gửi dạng telemetry): `current_fw_title`, `current_fw_version`, `fw_state` (ví dụ `DOWNLOADING`, `DOWNLOADED`, `VERIFIED`, `UPDATING`, `UPDATED`, `FAILED`), `fw_error` (chỉ khi `FAILED`). Tên và giá trị `fw_state` **CẦN XÁC MINH** với tài liệu ThingsBoard (xem COREIOT_SETUP.md mục 10).
+Khóa bổ sung **khi OTA** (cả hai node, gửi dạng telemetry): `current_fw_title`, `current_fw_version` (mỗi lần MQTT kết nối), `fw_state` (`DOWNLOADING`, `DOWNLOADED`, `VERIFIED`, `UPDATING`, `UPDATED`, `FAILED`), `fw_error` (chỉ khi `FAILED`), `fw_progress` (% khi `DOWNLOADING`, tối đa 1 lần/s). Tên và giá trị `fw_state` **CẦN XÁC MINH** trên CoreIOT thật (xem COREIOT_SETUP.md mục 10).
 
 Shared attributes do server ghi khi gán OTA (thiết bị chỉ đọc): `fw_title`, `fw_version`, `fw_size`, `fw_checksum`, `fw_checksum_algorithm`.
 
@@ -276,7 +276,7 @@ Tự hiện thực bằng **`WebServer.h` có sẵn trong core** (đã chốt th
 ### 8.7 OTA (T14)
 
 - Cơ chế đề xuất: OTA của ThingsBoard/CoreIOT (upload `.bin` ở mục OTA updates, gán cho device/profile; thiết bị đọc shared attributes `fw_title`, `fw_version`, `fw_size`, `fw_checksum`, `fw_checksum_algorithm` rồi tải bản mới qua MQTT chunk hoặc HTTP).
-- **CẦN XÁC MINH** chính xác tên attribute/topic theo tài liệu ThingsBoard trước khi code.
+- Đã cài theo tài liệu ThingsBoard (`common/ota_client`, chạy trong ngữ cảnh `taskCoreiot` vì PubSubClient không thread-safe): subscribe `v1/devices/me/attributes`, `.../attributes/response/+`, `v2/fw/response/+/chunk/+`; mỗi lần kết nối chủ động hỏi `v1/devices/me/attributes/request/1`; tải chunk 4096 B qua `v2/fw/request/<reqId>/chunk/<i>`; checksum SHA256/MD5; tối đa 3 lần thử cho mỗi `fw_version` đích (NVS). Partition `min_spiffs` (2 × 1.9 MB app). **Vẫn CẦN XÁC MINH trên CoreIOT thật** (chưa chạy trên kit).
 - Phải có: phiên bản trước/sau hiển thị trên dashboard hoặc LCD, log tiến trình, xử lý lỗi (checksum sai, mất mạng giữa chừng không brick thiết bị), giữ bản backup firmware để nạp lại bằng cáp.
 - Phương án yếu hơn (chỉ khi không làm được): `ArduinoOTA` qua LAN. Chỉ dùng như bước thử nghiệm, không thay thế T14 trong báo cáo.
 

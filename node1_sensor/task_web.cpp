@@ -84,7 +84,7 @@ void taskWeb(void *) {
   for (;;) {
     server.handleClient();
     if (webRestartDue()) {
-      sharedForceSafe();  // tat suoi truoc khi khoi dong lai
+      sharedHoldSafe();  // tat suoi va khoa truoc khi khoi dong lai
       appLog("WEB", "restarting to apply new config");
       vTaskDelay(pdMS_TO_TICKS(WEB_LOG_FLUSH_MS));
       ESP.restart();

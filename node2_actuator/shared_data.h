@@ -48,6 +48,7 @@ CmdResult sharedSetManualFan(bool on);
 CmdResult sharedSetManualPump(bool on);
 // Luon cap nhat co stale/fault; chi doi chap hanh khi dang Auto.
 void sharedApplyAuto(bool fan, bool pump, bool dataStale, bool dataFault);
+void sharedHoldSafe();  // tat quat/bom va khoa den khi khoi dong lai (truoc OTA/restart)
 
 void sharedSetNet(const NetState &net);
 NetState sharedGetNet();

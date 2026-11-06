@@ -39,6 +39,10 @@ struct RpcRequest {
 };
 
 void linkEnableRescueAp(const RescueApConfig &ap);  // goi truoc linkBegin; khong goi = khong co AP
+// Topic khong phai RPC (OTA): subscribe them moi lan ket noi; handler chay trong mqtt.loop() cua task coreiot,
+// payload chi hop le trong luc goi (bo dem PubSubClient bi ghi de khi publish).
+typedef bool (*LinkMessageHandler)(const char *topic, const uint8_t *payload, unsigned int len);
+void linkSetMessageHandler(LinkMessageHandler handler, const char *const *topics, size_t topicCount);
 bool linkBegin(const LinkConfig &cfg);   // false neu thieu RAM (queue/buffer)
 void linkService();                      // goi moi vong lap task, chu ky <= 100 ms
 bool linkWifiUp();

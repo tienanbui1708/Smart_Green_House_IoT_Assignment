@@ -7,6 +7,7 @@
 #include <app_log.h>
 #include <config_store.h>
 #include <coreiot_link.h>
+#include <ota_client.h>
 #include <protocol.h>
 #include "config.h"
 #include "secrets.h"
@@ -20,7 +21,8 @@ static_assert(sizeof(AP_PASS) - 1 >= 8, "AP_PASS phai >= 8 ky tu (WPA2)");
 
 namespace {
 constexpr uint32_t WIFI_BACKOFF_MS[] = WIFI_BACKOFF_LIST;
-constexpr size_t TELEMETRY_JSON_MAX = MQTT_BUFFER_SIZE - 64;  // chua cho header + topic
+const char *const OTA_TOPICS[] = {TOPIC_ATTRIBUTES, TOPIC_ATTR_RESPONSE_SUB, TOPIC_FW_RESPONSE_SUB};
+static_assert(MQTT_BUFFER_SIZE >= OTA_CHUNK_SIZE + 256, "MQTT buffer phai chua duoc chunk OTA");
 
 float round1(float v) {
   return roundf(v * 10.0f) / 10.0f;
@@ -109,6 +111,9 @@ void taskCoreiot(void *) {
       net.ssid, net.pass, net.host, net.port, net.token, MQTT_CLIENT_ID,
       MQTT_BUFFER_SIZE, MQTT_KEEPALIVE_S, MQTT_SOCKET_TIMEOUT_S, MQTT_RETRY_MS,
       WIFI_ATTEMPT_TIMEOUT_MS, WIFI_BACKOFF_MS, sizeof(WIFI_BACKOFF_MS) / sizeof(WIFI_BACKOFF_MS[0]), ESPNOW_CHANNEL};
+  otaBegin({FW_TITLE, FW_VERSION, OTA_CHUNK_SIZE, OTA_CHUNK_TIMEOUT_MS, OTA_CHUNK_RETRIES, OTA_MAX_ATTEMPTS,
+            OTA_PROGRESS_PERIOD_MS, OTA_REBOOT_DELAY_MS, sharedHoldSafe});
+  linkSetMessageHandler(otaHandleMessage, OTA_TOPICS, sizeof(OTA_TOPICS) / sizeof(OTA_TOPICS[0]));
   linkEnableRescueAp({AP_SSID, AP_PASS, AP_BOOT_TIMEOUT_MS, AP_LOST_TIMEOUT_MS, AP_IDLE_RETRY_MS});
   if (!linkBegin(cfg)) {
     appLog("MQTT", "init FAILED (out of memory), task stopped");
@@ -124,6 +129,8 @@ void taskCoreiot(void *) {
     while (linkNextRpc(req)) handleRpc(req);
 
     bool fresh = linkTakeJustConnected();
+    if (fresh) otaOnConnected();  // bao phien ban + hoi fw_* (gan firmware luc thiet bi tat van cap nhat)
+    otaService();
     if (linkMqttUp() && (fresh || millis() - lastTelemetryMs >= TELEMETRY_PERIOD_MS)) {
       publishTelemetry();
       lastTelemetryMs = millis();

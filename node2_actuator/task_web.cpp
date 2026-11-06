@@ -70,11 +70,6 @@ void registerRoutes() {
   server.on("/api/pump", HTTP_POST, []() { handleSwitch(sharedSetManualPump); });
 }
 
-// Dua chap hanh ve an toan truoc khi khoi dong lai (ep Auto, du lieu cu -> taskControl tat).
-void safeBeforeRestart() {
-  sharedSetAutoMode(true);
-  sharedApplyAuto(false, false, true, false);
-}
 }  // namespace
 
 void taskWeb(void *) {
@@ -86,7 +81,7 @@ void taskWeb(void *) {
   for (;;) {
     server.handleClient();
     if (webRestartDue()) {
-      safeBeforeRestart();
+      sharedHoldSafe();  // tat quat/bom va khoa truoc khi khoi dong lai
       appLog("WEB", "restarting to apply new config");
       vTaskDelay(pdMS_TO_TICKS(WEB_LOG_FLUSH_MS));
       ESP.restart();
