@@ -167,7 +167,7 @@ Thứ tự chạy (đúng thứ tự để khỏi nhầm MAC):
 3. Cấp nguồn cả hai, cùng kết nối **một router Wi-Fi 2.4 GHz** (để ESP-NOW cùng kênh với router).
 4. Trên CoreIOT: `Node1` và `Node2` đều **Active**, tab **Latest telemetry** có khóa theo `PROJECT.md` mục 7.2:
    - Node 1: `temperature, humidity, soil, ai_class, heater, auto, rssi, heap, uptime, fw_version`
-   - Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s`
+   - Node 2: `fan, pump, auto, rssi, heap, uptime, fw_version, espnow_age_s, alert_level`
 5. Nếu thấy khóa lạ/thiếu: **sửa firmware cho khớp** `PROJECT.md`, không sửa ngược dashboard. Tên khóa phải ổn định vì dashboard và rule chain dựa vào đó.
 
 ---

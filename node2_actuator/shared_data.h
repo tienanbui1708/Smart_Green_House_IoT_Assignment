@@ -25,6 +25,13 @@ struct NetState {
   int8_t rssi;
 };
 
+// Canh bao tu RuleChain (RPC cloudAlert). Chi hien thi, khong doi chap hanh.
+struct CloudAlertState {
+  uint8_t level;      // 0 = khong co; 1 = canh bao (vang); 2 = nghiem trong (do)
+  char msg[17];       // toi da 16 ky tu ASCII + '\0'
+  uint32_t expireMs;  // millis() khi het hieu luc
+};
+
 enum class CmdResult : uint8_t { Ok, RejectedAutoMode };
 
 void sharedInit();
@@ -40,3 +47,7 @@ void sharedApplyAuto(bool fan, bool pump, bool dataStale);  // chi doi chap hanh
 
 void sharedSetNet(const NetState &net);
 NetState sharedGetNet();
+
+// level phai 0..2 (kiem tra o noi goi). level 0 xoa ngay; goi lai thi ghi de va gia han.
+void sharedSetAlert(uint8_t level, const char *msg, uint32_t durationMs = 10000);
+CloudAlertState sharedGetAlert();  // ban sao; da het han thi tra level 0
