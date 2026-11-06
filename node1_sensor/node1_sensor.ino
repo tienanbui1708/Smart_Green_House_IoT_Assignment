@@ -30,7 +30,7 @@ void taskStats(void *) {
   for (;;) {
     vTaskDelay(pdMS_TO_TICKS(STATS_PERIOD_MS));
 #if DEBUG_LOG
-    char line[160];
+    char line[192];  // = LOG_LINE_MAX cua app_log; 7 task x ~14 ky tu
     int n = snprintf(line, sizeof(line), "up=%lus heap=%u minheap=%u stack_free:",
                      (unsigned long)(millis() / 1000), (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMinFreeHeap());
     for (const TaskEntry &t : appTasks) {
