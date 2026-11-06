@@ -22,6 +22,13 @@ bool mqttWasUp = false;
 bool justConnected = false;
 volatile uint32_t rpcDropped = 0;
 
+RescueApConfig ap = {};
+bool apActive = false;
+bool everConnected = false;
+uint32_t staDownSinceMs = 0;  // luc khoi dong hoac luc mat STA
+uint32_t lastApClientMs = 0;  // lan cuoi thay co may trong AP
+uint8_t lastStaChannel = 0;   // kenh router lan ket noi gan nhat
+
 bool timeReached(uint32_t target) {
   return (int32_t)(millis() - target) >= 0;
 }
@@ -47,11 +54,54 @@ void onMqttMessage(char *topic, uint8_t *payload, unsigned int len) {
   if (xQueueSend(rpcQueue, &req, 0) != pdTRUE) rpcDropped++;
 }
 
+// Kenh ESP-NOW: co dinh neu cau hinh, khong thi theo kenh router lan cuoi.
+uint8_t espnowChannel() {
+  return cfg.channel != 0 ? cfg.channel : lastStaChannel;
+}
+
 // Sau disconnect radio co the dung o kenh quet cuoi; dua ve kenh ESP-NOW de hai node van nghe nhau.
 void holdChannel() {
-  if (cfg.channel == 0) return;
-  esp_err_t err = esp_wifi_set_channel(cfg.channel, WIFI_SECOND_CHAN_NONE);
-  if (err != ESP_OK) appLog("WIFI", "set channel %u failed err=%d", cfg.channel, (int)err);
+  uint8_t ch = espnowChannel();
+  if (ch == 0) return;
+  esp_err_t err = esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE);
+  if (err != ESP_OK) appLog("WIFI", "set channel %u failed err=%d", ch, (int)err);
+}
+
+// Dang co nguoi dung trong AP: tam dung quet STA de AP khong bi nhay kenh (TASKS_SPEC 4.4.2).
+bool staAttemptAllowed() {
+  if (!apActive) return true;
+  if (WiFi.softAPgetStationNum() > 0) {
+    lastApClientMs = millis();
+    return false;
+  }
+  return millis() - lastApClientMs >= ap.idleRetryMs;
+}
+
+void startAp() {
+  uint8_t ch = espnowChannel() != 0 ? espnowChannel() : 1;  // cung kenh ESP-NOW
+  WiFi.mode(WIFI_AP_STA);
+  bool ok = WiFi.softAP(ap.ssid, ap.pass, ch);
+  apActive = ok;
+  lastApClientMs = millis();
+  appLog("WIFI", "rescue AP '%s' %s ch=%u ip=%s", ap.ssid, ok ? "up" : "FAILED", ch,
+         WiFi.softAPIP().toString().c_str());
+}
+
+void stopAp() {
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
+  apActive = false;
+  appLog("WIFI", "rescue AP off");
+}
+
+void serviceAp() {
+  if (ap.ssid == nullptr) return;
+  if (wifiPhase == WifiPhase::Up) {
+    if (apActive) stopAp();
+    return;
+  }
+  uint32_t limit = everConnected ? ap.lostTimeoutMs : ap.bootTimeoutMs;
+  if (!apActive && millis() - staDownSinceMs >= limit) startAp();
 }
 
 void startWifiAttempt() {
@@ -83,6 +133,7 @@ void serviceWifi() {
         holdChannel();
         wifiPhase = WifiPhase::Idle;
         wifiPhaseMs = millis();
+        staDownSinceMs = millis();
       }
       break;
     case WifiPhase::Connecting:
@@ -90,12 +141,19 @@ void serviceWifi() {
         appLog("WIFI", "connected ip=%s rssi=%d ch=%d", WiFi.localIP().toString().c_str(), (int)WiFi.RSSI(), (int)WiFi.channel());
         wifiPhase = WifiPhase::Up;
         wifiFailures = 0;
+        everConnected = true;
+        lastStaChannel = (uint8_t)WiFi.channel();
+      } else if (!staAttemptAllowed()) {
+        WiFi.disconnect();  // co nguoi vao AP giua luc quet: dung quet ngay
+        holdChannel();
+        wifiPhase = WifiPhase::Idle;
+        wifiPhaseMs = millis();
       } else if (millis() - wifiPhaseMs >= cfg.wifiAttemptTimeoutMs) {
         scheduleWifiRetry();
       }
       break;
     case WifiPhase::Idle:
-      if (timeReached(wifiPhaseMs)) startWifiAttempt();
+      if (timeReached(wifiPhaseMs) && staAttemptAllowed()) startWifiAttempt();
       break;
   }
 }
@@ -135,6 +193,10 @@ void serviceMqtt() {
 }
 }  // namespace
 
+void linkEnableRescueAp(const RescueApConfig &a) {
+  ap = a;
+}
+
 bool linkBegin(const LinkConfig &c) {
   cfg = c;
   rpcQueue = xQueueCreate(RPC_QUEUE_LEN, sizeof(RpcRequest));
@@ -152,11 +214,13 @@ bool linkBegin(const LinkConfig &c) {
   if (!mqtt.setBufferSize(cfg.bufferSize)) return false;
   wifiPhase = WifiPhase::Idle;
   wifiPhaseMs = millis();
+  staDownSinceMs = millis();
   return true;
 }
 
 void linkService() {
   serviceWifi();
+  serviceAp();
   serviceMqtt();
   if (rpcDropped > 0) {
     appLog("MQTT", "dropped %lu RPC (too long or queue full)", (unsigned long)rpcDropped);
@@ -166,6 +230,18 @@ void linkService() {
 
 bool linkWifiUp() {
   return wifiPhase == WifiPhase::Up;
+}
+
+bool linkApActive() {
+  return apActive;
+}
+
+uint8_t linkApClients() {
+  return apActive ? (uint8_t)WiFi.softAPgetStationNum() : 0;
+}
+
+uint8_t linkChannel() {
+  return (uint8_t)WiFi.channel();
 }
 
 bool linkMqttUp() {

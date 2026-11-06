@@ -21,6 +21,7 @@ TaskEntry appTasks[] = {
     {"actuator", taskActuator, STACK_ACTUATOR, PRIO_ACTUATOR, nullptr},
     {"coreiot", taskCoreiot, STACK_COREIOT, PRIO_COREIOT, nullptr},
     {"espnow", taskEspnowRx, STACK_ESPNOW, PRIO_ESPNOW, nullptr},
+    {"web", taskWeb, STACK_WEB, PRIO_WEB, nullptr},
 };
 
 // Dong STATS dung de ve do thi heap va chot stack (CLAUDE.md 4.1, 4.2).
@@ -48,6 +49,7 @@ void setup() {
 #endif
   logInit();
   sharedInit();
+  coreiotLoadConfig();  // truoc khi tao task: web va coreiot cung doc config_store
   Wire.begin();  // mot lan duy nhat; chi task display dung I2C o Node 2
   appLog("MAIN", "%s v%s boot", FW_TITLE, FW_VERSION);
 

@@ -24,14 +24,27 @@ struct LinkConfig {
   uint8_t channel;  // 0 = theo router; khac 0 = ESPNOW_CHANNEL co dinh (TASKS_SPEC 3.5)
 };
 
+// AP cuu ho (TASKS_SPEC 4.4): coreiot_link la chu duy nhat doi che do Wi-Fi.
+struct RescueApConfig {
+  const char *ssid;
+  const char *pass;          // >= 8 ky tu (WPA2)
+  uint32_t bootTimeoutMs;    // chua tung ket noi STA sau thoi gian nay -> bat AP
+  uint32_t lostTimeoutMs;    // mat STA qua thoi gian nay -> bat AP
+  uint32_t idleRetryMs;      // AP khong co may nao trong thoi gian nay -> cho thu lai STA
+};
+
 struct RpcRequest {
   char id[RPC_ID_MAX];
   char payload[RPC_PAYLOAD_MAX];
 };
 
+void linkEnableRescueAp(const RescueApConfig &ap);  // goi truoc linkBegin; khong goi = khong co AP
 bool linkBegin(const LinkConfig &cfg);   // false neu thieu RAM (queue/buffer)
 void linkService();                      // goi moi vong lap task, chu ky <= 100 ms
 bool linkWifiUp();
+bool linkApActive();
+uint8_t linkApClients();
+uint8_t linkChannel();                   // kenh radio hien tai
 bool linkMqttUp();
 bool linkTakeJustConnected();            // true mot lan sau moi lan MQTT ket noi lai
 int8_t linkRssi();

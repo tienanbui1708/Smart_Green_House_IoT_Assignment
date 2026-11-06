@@ -21,6 +21,7 @@ TaskEntry appTasks[] = {
     {"led", taskLed, STACK_LED, PRIO_LED, nullptr},
     {"coreiot", taskCoreiot, STACK_COREIOT, PRIO_COREIOT, nullptr},
     {"espnow", taskEspnow, STACK_ESPNOW, PRIO_ESPNOW, nullptr},
+    {"web", taskWeb, STACK_WEB, PRIO_WEB, nullptr},
 };
 
 // Dong STATS dung de ve do thi heap va chot stack (CLAUDE.md 4.1, 4.2).
@@ -48,6 +49,7 @@ void setup() {
 #endif
   logInit();
   sharedInit();
+  coreiotLoadConfig();  // truoc khi tao task: web va coreiot cung doc config_store
   Wire.begin();  // mot lan duy nhat, SDA/SCL mac dinh cua variant
   appLog("MAIN", "%s v%s boot", FW_TITLE, FW_VERSION);
 

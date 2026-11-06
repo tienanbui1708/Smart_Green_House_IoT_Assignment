@@ -84,3 +84,14 @@
 #define ESPNOW_AGE_UNKNOWN_S 999          // espnow_age_s khi chua nhan goi nao
 #define STACK_ESPNOW 4096
 #define PRIO_ESPNOW 3
+
+// ---- Webserver + AP cuu ho (M6, T07) ----
+#define WEB_PORT 80
+#define WEB_LOOP_MS 5                     // handleClient() moi 5 ms; handler ngan
+#define WEB_WIFI_WAIT_MS 100
+#define AP_SSID "GREENHOUSE-N2-SETUP"      // AP_PASS dat trong secrets.h (>= 8 ky tu)
+#define AP_BOOT_TIMEOUT_MS 20000          // khoi dong ma chua vao STA sau 20 s -> bat AP
+#define AP_LOST_TIMEOUT_MS 60000          // mat STA qua 60 s -> bat AP
+#define AP_IDLE_RETRY_MS 30000            // AP khong co may 30 s -> thu lai STA
+#define STACK_WEB 8192
+#define PRIO_WEB 1

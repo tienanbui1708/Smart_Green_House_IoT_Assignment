@@ -34,7 +34,7 @@
 |---|---|---|
 | **M4 – Dashboard + RuleChain + Notification** | T11, T12, T13 | Cấu hình CoreIOT; thêm RPC `cloudAlert` vào `node2_actuator/task_coreiot.cpp` |
 | **M5 – ESP-NOW** | T06 | `node1_sensor/task_espnow.cpp`, `node2_actuator/task_espnow_rx.cpp`; thêm struct `Pkt/Cmd/Ack` vào `common/protocol.h` |
-| **M6 – Webserver** | T07 | `node1_sensor/task_web.cpp`, `node2_actuator/task_web.cpp`, `node*/data/` (HTML/JS) |
+| **M6 – Webserver** | T07 | `node1_sensor/task_web.cpp`, `node2_actuator/task_web.cpp`, `web/index.html` → `node*/web_assets.h` (PROGMEM) |
 | **M7 – TinyML** | T04, T05 | `node1_sensor/task_tinyml.cpp`, `node1_sensor/model.h`, `ml/collect_serial.py`, `ml/train.py`, `ml/export_tflite.py`, `ml/requirements.txt` |
 | **M8 – OTA** | T14 | `node1_sensor/task_ota.cpp`, `node2_actuator/task_ota.cpp` |
 
@@ -57,7 +57,7 @@
 | `task_coreiot.cpp` | `taskCoreiot` – Wi-Fi backoff, MQTT, RPC setMode/setHeater | ✅ |
 | `task_tinyml.cpp` | `taskTinyml` – suy luận MLP | ❌ chưa có |
 | `task_espnow.cpp` | `taskEspnow` – gửi Pkt, nhận Ack/Cmd | ❌ chưa có |
-| `task_web.cpp` | `taskWeb` – ESPAsyncWebServer + LittleFS | ❌ chưa có |
+| `task_web.cpp` | `taskWeb` – WebServer.h + trang PROGMEM, cấu hình LittleFS | ❌ chưa có |
 | `task_ota.cpp` | `taskOta` – tải firmware theo chunk từ CoreIOT | ❌ chưa có |
 | `model.h` | Mảng C của model TFLite | ❌ chưa có (xuất từ ml/) |
 
